@@ -1,8 +1,53 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="10x Cards - Aplikacja do tworzenia fiszek">
+  <main class="container mx-auto px-4 py-10">
+    <header class="mb-12 text-center">
+      <h1 class="text-4xl font-bold mb-3">10x Cards</h1>
+      <p class="text-xl text-gray-600">Efektywne tworzenie i zarządzanie fiszkami edukacyjnymi</p>
+    </header>
+
+    <div class="max-w-2xl mx-auto">
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4">Witaj w aplikacji 10x Cards!</h2>
+        <p class="mb-4">
+          Nasza aplikacja pomaga szybko tworzyć fiszki edukacyjne wykorzystując technologię AI. Wklej tekst źródłowy, a
+          otrzymasz gotowe propozycje fiszek, które możesz dostosować do swoich potrzeb.
+        </p>
+
+        <h3 class="text-xl font-medium mt-6 mb-3">Dostępne funkcje:</h3>
+        <ul class="list-disc pl-5 mb-6 space-y-2">
+          <li>Automatyczne generowanie fiszek na podstawie tekstu</li>
+          <li>Edycja i dostosowywanie wygenerowanych propozycji</li>
+          <li>Zapisywanie fiszek w bazie danych</li>
+          <li>Przyjazny interfejs użytkownika</li>
+        </ul>
+
+        <div class="mt-8 flex justify-center">
+          <a
+            href="/generate"
+            class="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors"
+          >
+            Przejdź do generatora fiszek
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
 </Layout>
