@@ -1,11 +1,13 @@
 ---
 import "../styles/global.css";
+import { AuthStatus } from "../components/auth/AuthStatus";
 
 interface Props {
   title?: string;
 }
 
 const { title = "10x Astro Starter" } = Astro.props;
+const user = Astro.locals.user;
 ---
 
 <!doctype html>
@@ -18,7 +20,21 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <header
+      class="w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-gray-200 dark:border-gray-800 bg-brand-purple text-white"
+    >
+      <div class="flex items-center">
+        <a href="/" class="flex items-center gap-2">
+          <img src="/10xcards-logo.png" alt="10x Cards Logo" class="h-8" />
+        </a>
+      </div>
+      <div>
+        <AuthStatus client:load isLoggedIn={!!user} userEmail={user?.email} />
+      </div>
+    </header>
+    <main class="container mx-auto px-4 py-6">
+      <slot />
+    </main>
   </body>
 </html>
 

@@ -1,111 +1,61 @@
-import { useState, useEffect } from "react";
-import { z } from "zod";
+import { useEffect } from "react";
+import { useForm } from "../../hooks/useForm";
+import { useAuth } from "../../hooks/useAuth";
+import { updatePasswordSchema } from "../../lib/auth/validation";
 import { Button } from "../ui/button";
-
-// Schema walidacji
-const updatePasswordSchema = z.object({
-  password: z.string()
-    .min(8, "Hasło musi mieć co najmniej 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać przynajmniej jedną wielką literę")
-    .regex(/[a-z]/, "Hasło musi zawierać przynajmniej jedną małą literę")
-    .regex(/[0-9]/, "Hasło musi zawierać przynajmniej jedną cyfrę"),
-  password_confirmation: z.string(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Hasła muszą być identyczne",
-  path: ["password_confirmation"],
-});
-
-// Typ dla danych formularza
-type UpdatePasswordFormData = z.infer<typeof updatePasswordSchema>;
+import { FormError, FieldError, FormSuccess } from "../ui/form-feedback";
+import type { UpdatePasswordDTO } from "../../types";
 
 interface UpdatePasswordFormProps {
   token?: string;
 }
 
 export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
-  const [formData, setFormData] = useState<UpdatePasswordFormData>({
+  const auth = useAuth();
+  const initialData: UpdatePasswordDTO = {
     password: "",
     password_confirmation: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [tokenError, setTokenError] = useState<string | null>(null);
+    token: token || "",
+  };
+
+  const {
+    formData,
+    errors,
+    isLoading,
+    generalError,
+    isSuccess,
+    setGeneralError,
+    setFormData,
+    handleChange,
+    handleSubmit
+  } = useForm<UpdatePasswordDTO, typeof updatePasswordSchema>(
+    initialData,
+    updatePasswordSchema,
+    auth.updatePassword
+  );
 
   // Sprawdzenie czy token jest dostępny
   useEffect(() => {
     if (!token) {
-      setTokenError("Brak lub nieprawidłowy token resetowania hasła. Upewnij się, że kliknąłeś w poprawny link.");
+      setGeneralError("Brak lub nieprawidłowy token resetowania hasła. Upewnij się, że kliknąłeś w poprawny link.");
+    } else {
+      // Ustawienie tokenu w formularzu
+      setFormData(prev => ({ ...prev, token }));
     }
-  }, [token]);
+  }, [token, setGeneralError, setFormData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Usuwanie błędu po edycji pola
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    if (!token) {
-      setTokenError("Brak tokenu resetowania hasła.");
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      // Walidacja danych
-      updatePasswordSchema.parse(formData);
-      
-      // Ponieważ nie implementujemy backendu, tylko wyświetlamy komunikat
-      console.log("Aktualizacja hasła wysłana", { ...formData, token });
-      
-      // Symulacja sukcesu
-      setIsSuccess(true);
-      
-      // Resetowanie formularza po sukcesie
-      setFormData({ password: "", password_confirmation: "" });
-      setErrors({});
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        // Formatowanie błędów Zod do prostego obiektu errors
-        const fieldErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path) {
-            fieldErrors[err.path[0]] = err.message;
-          }
-        });
-        setErrors(fieldErrors);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (tokenError) {
+  if (generalError && !token) {
     return (
       <div>
         <h1 className="text-2xl font-bold mb-6 text-center">Błąd resetowania hasła</h1>
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 mb-6">
-          <p className="text-red-800 dark:text-red-400 text-center">{tokenError}</p>
-          <div className="mt-4 flex justify-center">
-            <a
-              href="/auth/reset-password"
-              className="text-sm text-brand-purple hover:text-brand-purple/80 dark:text-brand-purple dark:hover:text-brand-purple/80"
-            >
-              Wróć do strony resetowania hasła
-            </a>
-          </div>
+        <FormError>{generalError}</FormError>
+        <div className="mt-4 flex justify-center">
+          <a
+            href="/auth/reset-password"
+            className="text-sm text-brand-purple hover:text-brand-purple/80 dark:text-brand-purple dark:hover:text-brand-purple/80"
+          >
+            Wróć do strony resetowania hasła
+          </a>
         </div>
       </div>
     );
@@ -115,11 +65,11 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
     <div>
       <h1 className="text-2xl font-bold mb-6 text-center">Ustaw nowe hasło</h1>
       
+      {generalError && <FormError>{generalError}</FormError>}
+      
       {isSuccess ? (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4 mb-6">
-          <p className="text-green-800 dark:text-green-400 text-center">
-            Twoje hasło zostało pomyślnie zresetowane. Możesz teraz się zalogować.
-          </p>
+        <FormSuccess>
+          Twoje hasło zostało pomyślnie zresetowane. Możesz teraz się zalogować.
           <div className="mt-4 flex justify-center">
             <a
               href="/auth/login"
@@ -128,7 +78,7 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
               Przejdź do strony logowania
             </a>
           </div>
-        </div>
+        </FormSuccess>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -150,7 +100,7 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
               } bg-white dark:bg-gray-700 p-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
               disabled={isLoading}
             />
-            {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+            <FieldError error={errors.password} />
           </div>
           
           <div>
@@ -168,9 +118,7 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
               } bg-white dark:bg-gray-700 p-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
               disabled={isLoading}
             />
-            {errors.password_confirmation && (
-              <p className="mt-1 text-sm text-red-500">{errors.password_confirmation}</p>
-            )}
+            <FieldError error={errors.password_confirmation} />
           </div>
           
           <Button 

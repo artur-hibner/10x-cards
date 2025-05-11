@@ -1,53 +1,47 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AuthLayout from "../layouts/AuthLayout.astro";
+import { LoginForm } from "../components/auth/LoginForm";
+
+// Sprawdzenie czy użytkownik jest zalogowany
+const isLoggedIn = !!Astro.locals.user;
+
+// Jeśli użytkownik jest zalogowany, przekierowanie do /generate
+if (isLoggedIn) {
+  return Astro.redirect("/generate");
+}
+
+// Pobieramy adres przekierowania z query string (jeśli istnieje)
+const redirectParam = Astro.url.searchParams.get("redirect") || null;
 ---
 
-<Layout title="10x Cards - Aplikacja do tworzenia fiszek">
-  <main class="container mx-auto px-4 py-10">
-    <header class="mb-12 text-center">
-      <h1 class="text-4xl font-bold mb-3">10x Cards</h1>
-      <p class="text-xl text-gray-600">Efektywne tworzenie i zarządzanie fiszkami edukacyjnymi</p>
-    </header>
-
-    <div class="max-w-2xl mx-auto">
-      <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-semibold mb-4">Witaj w aplikacji 10x Cards!</h2>
-        <p class="mb-4">
-          Nasza aplikacja pomaga szybko tworzyć fiszki edukacyjne wykorzystując technologię AI. Wklej tekst źródłowy, a
-          otrzymasz gotowe propozycje fiszek, które możesz dostosować do swoich potrzeb.
-        </p>
-
-        <h3 class="text-xl font-medium mt-6 mb-3">Dostępne funkcje:</h3>
-        <ul class="list-disc pl-5 mb-6 space-y-2">
-          <li>Generowanie fiszek przy pomocy AI na podstawie zadanego tekstu</li>
-          <li>Edycja i dostosowywanie wygenerowanych fiszek</li>
-          <li>Zapisywanie fiszek w bazie danych</li>
-          <li>Przyjazny interfejs użytkownika</li>
-        </ul>
-
-        <div class="mt-8 flex justify-center">
-          <a
-            href="/generate"
-            class="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors"
-          >
-            Przejdź do generatora fiszek
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M5 12h14"></path>
-              <path d="m12 5 7 7-7 7"></path>
-            </svg>
-          </a>
-        </div>
-      </div>
+<AuthLayout title="10x Cards - Logowanie" wideContent={true}>
+  <div class="flex flex-col md:flex-row w-full gap-8 items-center">
+    <!-- Lewa strona - formularz logowania -->
+    <div class="w-full md:w-1/2">
+      <LoginForm client:load />
+      <!-- Przekazanie parametru redirect do strony -->
+      {redirectParam && <script define:vars={{ redirectParam }}>window.redirectAfterLogin = redirectParam;</script>}
     </div>
-  </main>
-</Layout>
+
+    <!-- Linia pionowa dla większych ekranów -->
+    <div class="hidden md:block h-[70%] w-px bg-gray-200 dark:bg-gray-700 self-center"></div>
+
+    <!-- Prawa strona - opis aplikacji -->
+    <div class="w-full md:w-1/2 text-center md:text-left">
+      <h1 class="text-3xl font-bold mb-3">10x Cards</h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400 mb-4">
+        Efektywne tworzenie i zarządzanie fiszkami edukacyjnymi
+      </p>
+
+      <h3 class="text-xl font-medium mt-6 mb-3">Dostępne funkcje:</h3>
+      <ul class="list-disc pl-5 mb-6 space-y-2">
+        <li>Automatyczne generowanie fiszek na podstawie tekstu</li>
+        <li>Edycja i dostosowywanie wygenerowanych propozycji</li>
+        <li>Zapisywanie fiszek w bazie danych</li>
+        <li>Przyjazny interfejs użytkownika</li>
+      </ul>
+
+      <!-- Usunięty link do rejestracji -->
+    </div>
+  </div>
+</AuthLayout>

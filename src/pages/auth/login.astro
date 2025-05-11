@@ -1,30 +1,6 @@
 ---
-import AuthLayout from "../../layouts/AuthLayout.astro";
-import { LoginForm } from "../../components/auth/LoginForm";
+// Przekierowanie na stronę główną, zachowując parametr redirect jeśli istnieje
+const redirectParam = Astro.url.searchParams.get("redirect");
+const targetUrl = redirectParam ? `/?redirect=${encodeURIComponent(redirectParam)}` : "/";
+return Astro.redirect(targetUrl);
 ---
-
-<AuthLayout title="10x Cards - Logowanie" wideContent={true}>
-  <div class="flex flex-col md:flex-row w-full gap-8 items-center">
-    <!-- Lewa strona - formularz logowania -->
-    <div class="w-full md:w-1/2">
-      <LoginForm client:load />
-    </div>
-
-    <!-- Linia pionowa -->
-    <div class="hidden md:block h-[70%] w-px bg-white self-center"></div>
-
-    <!-- Prawa strona - treść z index.astro -->
-    <div class="w-full md:w-1/2 text-center md:text-left">
-      <h1 class="text-3xl font-bold mb-3">10x Cards</h1>
-      <p class="text-lg text-gray-600 dark:text-gray-400 mb-4">Efektywne tworzenie i zarządzanie fiszkami edukacyjnymi</p>
-      
-      <h2 class="text-xl font-medium mt-4 mb-2">Dostępne funkcje:</h2>
-      <ul class="list-disc pl-5 mb-4 space-y-1 text-left">
-        <li>Automatyczne generowanie fiszek na podstawie tekstu</li>
-        <li>Edycja i dostosowywanie wygenerowanych propozycji</li>
-        <li>Zapisywanie fiszek w bazie danych</li>
-        <li>Przyjazny interfejs użytkownika</li>
-      </ul>
-    </div>
-  </div>
-</AuthLayout> 

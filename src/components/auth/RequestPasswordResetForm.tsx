@@ -1,80 +1,40 @@
-import { useState } from "react";
-import { z } from "zod";
+import { useForm } from "../../hooks/useForm";
+import { useAuth } from "../../hooks/useAuth";
+import { requestPasswordResetSchema } from "../../lib/auth/validation";
 import { Button } from "../ui/button";
-
-// Schema walidacji
-const requestPasswordResetSchema = z.object({
-  email: z.string().email("Nieprawidłowy format adresu email"),
-});
-
-// Typ dla danych formularza
-type RequestPasswordResetFormData = z.infer<typeof requestPasswordResetSchema>;
+import { FormError, FieldError, FormSuccess } from "../ui/form-feedback";
+import type { RequestPasswordResetDTO } from "../../types";
 
 export function RequestPasswordResetForm() {
-  const [formData, setFormData] = useState<RequestPasswordResetFormData>({
+  const auth = useAuth();
+  const initialData: RequestPasswordResetDTO = {
     email: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Usuwanie błędu po edycji pola
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // Walidacja danych
-      requestPasswordResetSchema.parse(formData);
-      
-      // Ponieważ nie implementujemy backendu, tylko wyświetlamy komunikat
-      console.log("Żądanie resetu hasła wysłane", formData);
-      
-      // Symulacja sukcesu
-      setIsSuccess(true);
-      
-      // Resetowanie formularza po sukcesie
-      setFormData({ email: "" });
-      setErrors({});
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        // Formatowanie błędów Zod do prostego obiektu errors
-        const fieldErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path) {
-            fieldErrors[err.path[0]] = err.message;
-          }
-        });
-        setErrors(fieldErrors);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    formData,
+    errors,
+    isLoading,
+    generalError,
+    isSuccess,
+    handleChange,
+    handleSubmit
+  } = useForm<RequestPasswordResetDTO, typeof requestPasswordResetSchema>(
+    initialData,
+    requestPasswordResetSchema,
+    auth.resetPassword
+  );
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-center">Resetowanie hasła</h1>
       
+      {generalError && <FormError>{generalError}</FormError>}
+      
       {isSuccess ? (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4 mb-6">
-          <p className="text-green-800 dark:text-green-400 text-center">
-            Jeśli podany adres email istnieje w naszej bazie, 
-            wyślemy na niego instrukcję resetowania hasła.
-          </p>
+        <FormSuccess>
+          Jeśli podany adres email istnieje w naszej bazie, 
+          wyślemy na niego instrukcję resetowania hasła.
           <div className="mt-4 flex justify-center">
             <a
               href="/auth/login"
@@ -83,7 +43,7 @@ export function RequestPasswordResetForm() {
               Wróć do strony logowania
             </a>
           </div>
-        </div>
+        </FormSuccess>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -105,7 +65,7 @@ export function RequestPasswordResetForm() {
               } bg-white dark:bg-gray-700 p-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
               disabled={isLoading}
             />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+            <FieldError error={errors.email} />
           </div>
           
           <Button 

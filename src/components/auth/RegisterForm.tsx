@@ -1,80 +1,37 @@
-import { useState } from "react";
-import { z } from "zod";
+import { useForm } from "../../hooks/useForm";
+import { useAuth } from "../../hooks/useAuth";
+import { registerSchema } from "../../lib/auth/validation";
 import { Button } from "../ui/button";
-
-// Schema walidacji
-const registerSchema = z.object({
-  email: z.string().email("Nieprawidłowy format adresu email"),
-  password: z.string()
-    .min(8, "Hasło musi mieć co najmniej 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać przynajmniej jedną wielką literę")
-    .regex(/[a-z]/, "Hasło musi zawierać przynajmniej jedną małą literę")
-    .regex(/[0-9]/, "Hasło musi zawierać przynajmniej jedną cyfrę"),
-  password_confirmation: z.string(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Hasła muszą być identyczne",
-  path: ["password_confirmation"],
-});
-
-// Typ dla danych formularza
-type RegisterFormData = z.infer<typeof registerSchema>;
+import { FormError, FieldError } from "../ui/form-feedback";
+import type { UserRegisterDTO } from "../../types";
 
 export function RegisterForm() {
-  const [formData, setFormData] = useState<RegisterFormData>({
+  const auth = useAuth();
+  const initialData: UserRegisterDTO = {
     email: "",
     password: "",
     password_confirmation: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Usuwanie błędu po edycji pola
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // Walidacja danych
-      registerSchema.parse(formData);
-      
-      // Ponieważ nie implementujemy backendu, tylko wyświetlamy komunikat
-      console.log("Dane rejestracji wysłane", formData);
-      
-      // Resetowanie formularza po sukcesie
-      setFormData({ email: "", password: "", password_confirmation: "" });
-      setErrors({});
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        // Formatowanie błędów Zod do prostego obiektu errors
-        const fieldErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path) {
-            fieldErrors[err.path[0]] = err.message;
-          }
-        });
-        setErrors(fieldErrors);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    formData,
+    errors,
+    isLoading,
+    generalError,
+    apiErrorDetails,
+    handleChange,
+    handleSubmit
+  } = useForm<UserRegisterDTO, typeof registerSchema>(
+    initialData,
+    registerSchema,
+    auth.register
+  );
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-center">Rejestracja</h1>
+      
+      {generalError && <FormError details={apiErrorDetails}>{generalError}</FormError>}
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -91,8 +48,10 @@ export function RegisterForm() {
               errors.email ? "border-red-500" : "border-gray-300 dark:border-gray-600"
             } bg-white dark:bg-gray-700 p-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
             disabled={isLoading}
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "email-error" : undefined}
           />
-          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+          <FieldError error={errors.email} />
         </div>
         
         <div>
@@ -109,8 +68,10 @@ export function RegisterForm() {
               errors.password ? "border-red-500" : "border-gray-300 dark:border-gray-600"
             } bg-white dark:bg-gray-700 p-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
             disabled={isLoading}
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "password-error" : undefined}
           />
-          {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+          <FieldError error={errors.password} />
         </div>
         
         <div>
@@ -127,10 +88,10 @@ export function RegisterForm() {
               errors.password_confirmation ? "border-red-500" : "border-gray-300 dark:border-gray-600"
             } bg-white dark:bg-gray-700 p-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
             disabled={isLoading}
+            aria-invalid={!!errors.password_confirmation}
+            aria-describedby={errors.password_confirmation ? "password_confirmation-error" : undefined}
           />
-          {errors.password_confirmation && (
-            <p className="mt-1 text-sm text-red-500">{errors.password_confirmation}</p>
-          )}
+          <FieldError error={errors.password_confirmation} />
         </div>
         
         <Button 

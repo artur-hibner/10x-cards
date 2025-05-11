@@ -154,3 +154,38 @@ export interface GenerationStatisticsDTO {
   edit_rate: number;
   models_used: ModelUsageStats[];
 }
+
+// ---- AUTH DTO ----
+
+export interface UserAuthDTO {
+  email: string;
+  password: string;
+}
+
+export interface UserRegisterDTO extends UserAuthDTO {
+  password_confirmation: string;
+}
+
+export interface RequestPasswordResetDTO {
+  email: string;
+}
+
+export interface UpdatePasswordDTO {
+  password: string;
+  password_confirmation: string;
+  token: string;
+}
+
+export interface AuthResponseDTO {
+  success: boolean;
+  message?: string;
+  redirect?: string;
+  details?: Record<string, string[]>;
+  originalError?: string;
+  type?: string;
+}
+
+export interface UserDTO {
+  id: string;
+  email: string;
+}
