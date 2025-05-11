@@ -119,8 +119,11 @@ ID: US-009
 Tytuł: Bezpieczny dostęp i autoryzacja
 Opis: Jako zalogowany użytkownik chcę mieć pewność, że moje fiszki nie są dostępne dla innych użytkowników, aby zachować prywatność i bezpieczeństwo danych.
 Kryteria akceptacji:
-- Tylko zalogowany użytkownik może wyświetlać, edytować i usuwać swoje fiszki.
+- Tylko zalogowany użytkownik może generować, wyświetlać, edytować i usuwać swoje fiszki.
 - Nie ma dostępu do fiszek innych użytkowników ani możliwości współdzielenia.
+- Logowanie i rejestracja odbywają się na dedykowanych stronach
+- Odzyskiwanie hasła powinno być możliwe
+- Przyciski do logowania / wylogowania powinny znajdować się w prawym górnym rogu
 
 ## 6. Metryki sukcesu
 1. Efektywność generowania fiszek:

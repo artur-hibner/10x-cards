@@ -1,0 +1,42 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  wideContent?: boolean;
+}
+
+const { title = "10x Cards - Autoryzacja", wideContent = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="min-h-screen bg-brand-purple flex flex-col items-center justify-center p-4">
+      <div class={`w-full ${wideContent ? "max-w-4xl" : "max-w-md"}`}>
+        <div class="flex justify-center mb-8">
+          <img src="/10xcards-logo.png" alt="10x Cards Logo" class="h-30" />
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 md:p-8">
+          <slot />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
