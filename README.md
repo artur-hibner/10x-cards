@@ -8,6 +8,8 @@ A modern, opinionated starter template for building fast, accessible, and AI-fri
 - [React](https://react.dev/) v19.0.0 - UI library for building interactive components
 - [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
 - [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+- [Vitest](https://vitest.dev/) - Unit testing framework
+- [Playwright](https://playwright.dev/) - End-to-end testing framework
 
 ## Prerequisites
 
@@ -48,6 +50,8 @@ npm run build
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues
+- `npm run test` - Run unit tests with Vitest
+- `npm run test:e2e` - Run end-to-end tests with Playwright
 
 ## Project Structure
 
