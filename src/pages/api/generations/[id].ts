@@ -107,11 +107,7 @@ export const DELETE: APIRoute = async ({ params }) => {
     const generationId = validationResult.data;
 
     // Sprawdzenie czy generacja istnieje
-    const { data: generation, error: fetchError } = await supabaseClient
-      .from("generations")
-      .select("id")
-      .eq("id", generationId)
-      .single();
+    const { error: fetchError } = await supabaseClient.from("generations").select("id").eq("id", generationId).single();
 
     if (fetchError) {
       if (fetchError.code === "PGRST116") {
@@ -140,10 +136,7 @@ export const DELETE: APIRoute = async ({ params }) => {
     }
 
     // Usunięcie generacji
-    const { error: deleteError } = await supabaseClient
-      .from("generations")
-      .delete()
-      .eq("id", generationId);
+    const { error: deleteError } = await supabaseClient.from("generations").delete().eq("id", generationId);
 
     if (deleteError) {
       throw new Error(`Błąd podczas usuwania generacji: ${deleteError.message}`);
@@ -172,4 +165,4 @@ export const DELETE: APIRoute = async ({ params }) => {
       }
     );
   }
-}; 
+};

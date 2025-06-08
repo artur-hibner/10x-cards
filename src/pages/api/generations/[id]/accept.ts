@@ -10,14 +10,16 @@ const idSchema = z.string().pipe(z.coerce.number().positive());
 
 // Schemat walidacji dla akceptowanych fiszek
 const acceptFlashcardsSchema = z.object({
-  accepted_flashcards: z.array(
-    z.object({
-      proposal_id: z.string(),
-      front: z.string().min(1, "Front fiszki nie może być pusty"),
-      back: z.string().min(1, "Tył fiszki nie może być pusty"),
-      edit_status: z.enum(["edited", "unedited"]),
-    })
-  ).min(1, "Musisz wybrać co najmniej jedną fiszkę do akceptacji"),
+  accepted_flashcards: z
+    .array(
+      z.object({
+        proposal_id: z.string(),
+        front: z.string().min(1, "Front fiszki nie może być pusty"),
+        back: z.string().min(1, "Tył fiszki nie może być pusty"),
+        edit_status: z.enum(["edited", "unedited"]),
+      })
+    )
+    .min(1, "Musisz wybrać co najmniej jedną fiszkę do akceptacji"),
 });
 
 export const POST: APIRoute = async ({ params, request }) => {
@@ -94,10 +96,10 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     // Rozpoczęcie transakcji - tworzenie fiszek
-    const flashcardsToCreate = accepted_flashcards.map(flashcard => ({
+    const flashcardsToCreate = accepted_flashcards.map((flashcard) => ({
       front: flashcard.front,
       back: flashcard.back,
-      source: flashcard.edit_status === "edited" ? "ai-edited" as const : "ai-full" as const,
+      source: flashcard.edit_status === "edited" ? ("ai-edited" as const) : ("ai-full" as const),
       generation_id: generationId,
       user_id: DEFAULT_USER_ID,
     }));
@@ -112,8 +114,8 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     // Aktualizacja statystyk generacji
-    const acceptedUnedited = accepted_flashcards.filter(f => f.edit_status === "unedited").length;
-    const acceptedEdited = accepted_flashcards.filter(f => f.edit_status === "edited").length;
+    const acceptedUnedited = accepted_flashcards.filter((f) => f.edit_status === "unedited").length;
+    const acceptedEdited = accepted_flashcards.filter((f) => f.edit_status === "edited").length;
 
     const { error: updateError } = await supabaseClient
       .from("generations")
@@ -132,7 +134,7 @@ export const POST: APIRoute = async ({ params, request }) => {
     const response: AcceptFlashcardsResponseDTO = {
       generation_id: generationId,
       accepted_count: accepted_flashcards.length,
-      accepted_flashcards: createdFlashcards.map(flashcard => ({
+      accepted_flashcards: createdFlashcards.map((flashcard) => ({
         id: flashcard.id,
         front: flashcard.front,
         back: flashcard.back,

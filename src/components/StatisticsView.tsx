@@ -33,14 +33,13 @@ const StatisticsView = () => {
 
     try {
       const response = await fetch("/api/generations/statistics");
-      
+
       if (!response.ok) {
         throw new Error(`Błąd pobierania statystyk: ${response.status}`);
       }
 
       const data: GenerationStatisticsDTO = await response.json();
       setStatistics(data);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
       setError(errorMessage);
@@ -70,7 +69,7 @@ const StatisticsView = () => {
   // Formatowanie nazwy modelu (skrócenie)
   const formatModelName = (model: string) => {
     if (model.length <= 30) return model;
-    const parts = model.split('/');
+    const parts = model.split("/");
     if (parts.length === 2) {
       return `${parts[0]}/.../...${parts[1].slice(-15)}`;
     }
@@ -89,10 +88,7 @@ const StatisticsView = () => {
     return (
       <div className="text-center py-10">
         <p className="text-red-600 mb-4">{error || "Nie udało się załadować statystyk"}</p>
-        <button
-          onClick={fetchStatistics}
-          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-        >
+        <button onClick={fetchStatistics} className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90">
           Spróbuj ponownie
         </button>
       </div>
@@ -138,9 +134,7 @@ const StatisticsView = () => {
             <CardTitle className="text-sm font-medium text-gray-600">Wskaźnik akceptacji</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {formatPercentage(statistics.acceptance_rate)}
-            </div>
+            <div className="text-2xl font-bold text-green-600">{formatPercentage(statistics.acceptance_rate)}</div>
             <p className="text-xs text-gray-500 mt-1">Akceptowanych propozycji</p>
           </CardContent>
         </Card>
@@ -156,22 +150,18 @@ const StatisticsView = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
-                  {statistics.total_unedited_accepted}
-                </div>
+                <div className="text-2xl font-bold text-blue-600">{statistics.total_unedited_accepted}</div>
                 <p className="text-sm text-gray-600">Bez edycji</p>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">
-                  {statistics.total_edited_accepted}
-                </div>
+                <div className="text-2xl font-bold text-orange-600">{statistics.total_edited_accepted}</div>
                 <p className="text-sm text-gray-600">Z edycją</p>
               </div>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                <span className="font-medium">{formatPercentage(statistics.edit_rate)}</span> propozycji 
-                zostało zmodyfikowanych przed akceptacją
+                <span className="font-medium">{formatPercentage(statistics.edit_rate)}</span> propozycji zostało
+                zmodyfikowanych przed akceptacją
               </p>
             </div>
           </CardContent>
@@ -190,14 +180,10 @@ const StatisticsView = () => {
                     <p className="text-sm font-medium text-gray-900 truncate" title={model.model}>
                       {formatModelName(model.model)}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Średni czas: {formatDuration(model.average_duration)}
-                    </p>
+                    <p className="text-xs text-gray-500">Średni czas: {formatDuration(model.average_duration)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={index === 0 ? "default" : "outline"}>
-                      {model.count} użyć
-                    </Badge>
+                    <Badge variant={index === 0 ? "default" : "outline"}>{model.count} użyć</Badge>
                   </div>
                 </div>
               ))}
@@ -221,8 +207,8 @@ const StatisticsView = () => {
               <p className="text-sm text-green-700">
                 {statistics.total_generations > 0 ? (
                   <>
-                    Średnio {Math.round(statistics.total_generated_flashcards / statistics.total_generations)} 
-                    {" "}propozycji na generację
+                    Średnio {Math.round(statistics.total_generated_flashcards / statistics.total_generations)}{" "}
+                    propozycji na generację
                   </>
                 ) : (
                   "Brak danych do obliczeń"
@@ -232,9 +218,8 @@ const StatisticsView = () => {
             <div className="p-4 bg-blue-50 rounded-lg">
               <h4 className="font-medium text-blue-800 mb-2">Jakość propozycji</h4>
               <p className="text-sm text-blue-700">
-                {statistics.acceptance_rate > 0.5 ? "Wysoka" : 
-                 statistics.acceptance_rate > 0.3 ? "Średnia" : "Niska"} jakość - 
-                {" "}{formatPercentage(statistics.acceptance_rate)} akceptacji
+                {statistics.acceptance_rate > 0.5 ? "Wysoka" : statistics.acceptance_rate > 0.3 ? "Średnia" : "Niska"}{" "}
+                jakość - {formatPercentage(statistics.acceptance_rate)} akceptacji
               </p>
             </div>
           </div>
@@ -247,4 +232,4 @@ const StatisticsView = () => {
   );
 };
 
-export default StatisticsView; 
+export default StatisticsView;

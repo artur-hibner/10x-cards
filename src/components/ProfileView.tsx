@@ -14,7 +14,7 @@ const ProfileView = () => {
   const [lastLogin, setLastLogin] = useState<string>("");
   const [avatar, setAvatar] = useState<string>("");
   const [gender, setGender] = useState<"male" | "female">("male");
-  
+
   // Stan dla zmiany hasła
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
@@ -67,14 +67,13 @@ const ProfileView = () => {
 
     try {
       const response = await fetch("/api/generations/statistics");
-      
+
       if (!response.ok) {
         throw new Error(`Błąd pobierania statystyk: ${response.status}`);
       }
 
       const data: GenerationStatisticsDTO = await response.json();
       setStatistics(data);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
       setError(errorMessage);
@@ -122,7 +121,7 @@ const ProfileView = () => {
   // Obsługa zmiany hasła
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword !== confirmPassword) {
       addToast("Nowe hasła nie są identyczne", "error");
       return;
@@ -165,12 +164,12 @@ const ProfileView = () => {
   // Formatowanie daty
   const formatDate = (dateString: string) => {
     if (!dateString) return "Brak danych";
-    return new Date(dateString).toLocaleDateString('pl-PL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("pl-PL", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -189,7 +188,7 @@ const ProfileView = () => {
   // Formatowanie nazwy modelu
   const formatModelName = (model: string) => {
     if (model.length <= 30) return model;
-    const parts = model.split('/');
+    const parts = model.split("/");
     if (parts.length === 2) {
       return `${parts[0]}/.../...${parts[1].slice(-15)}`;
     }
@@ -212,9 +211,7 @@ const ProfileView = () => {
                   {avatar ? (
                     <img src={avatar} alt="Avatar" className="w-16 h-16 rounded-full" />
                   ) : (
-                    <span className="text-2xl text-gray-500">
-                      {userEmail.charAt(0).toUpperCase()}
-                    </span>
+                    <span className="text-2xl text-gray-500">{userEmail.charAt(0).toUpperCase()}</span>
                   )}
                 </div>
                 <div>
@@ -222,17 +219,17 @@ const ProfileView = () => {
                   <p className="font-medium">{userEmail || "Ładowanie..."}</p>
                 </div>
               </div>
-              
+
               <div>
                 <p className="text-sm text-gray-600">Data rejestracji</p>
                 <p className="font-medium">{formatDate(registrationDate)}</p>
               </div>
-              
+
               <div>
                 <p className="text-sm text-gray-600">Ostatnie logowanie</p>
                 <p className="font-medium">{formatDate(lastLogin)}</p>
               </div>
-              
+
               <div>
                 <p className="text-sm text-gray-600 mb-2">Płeć</p>
                 <div className="flex gap-3">
@@ -281,7 +278,7 @@ const ProfileView = () => {
                     disabled={isChangingPassword}
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="new-password" className="block text-sm font-medium mb-1">
                     Nowe hasło
@@ -296,7 +293,7 @@ const ProfileView = () => {
                     minLength={6}
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="confirm-password" className="block text-sm font-medium mb-1">
                     Potwierdź nowe hasło
@@ -311,7 +308,7 @@ const ProfileView = () => {
                     minLength={6}
                   />
                 </div>
-                
+
                 <Button
                   type="submit"
                   disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
@@ -332,9 +329,7 @@ const ProfileView = () => {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold mb-2">Statystyki generacji</h2>
-          <p className="text-gray-600">
-            Przegląd efektywności procesu generacji fiszek i wykorzystania modeli AI.
-          </p>
+          <p className="text-gray-600">Przegląd efektywności procesu generacji fiszek i wykorzystania modeli AI.</p>
         </div>
 
         {loading ? (
@@ -344,9 +339,7 @@ const ProfileView = () => {
         ) : error || !statistics ? (
           <div className="text-center py-10">
             <p className="text-red-600 mb-4">{error || "Nie udało się załadować statystyk"}</p>
-            <Button onClick={fetchStatistics}>
-              Spróbuj ponownie
-            </Button>
+            <Button onClick={fetchStatistics}>Spróbuj ponownie</Button>
           </div>
         ) : (
           <>
@@ -404,15 +397,11 @@ const ProfileView = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {statistics.total_unedited_accepted}
-                      </div>
+                      <div className="text-2xl font-bold text-blue-600">{statistics.total_unedited_accepted}</div>
                       <p className="text-sm text-gray-600">Bez edycji</p>
                     </div>
                     <div className="text-center p-4 bg-orange-50 rounded-lg">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {statistics.total_edited_accepted}
-                      </div>
+                      <div className="text-2xl font-bold text-orange-600">{statistics.total_edited_accepted}</div>
                       <p className="text-sm text-gray-600">Z edycją</p>
                     </div>
                   </div>
@@ -431,14 +420,10 @@ const ProfileView = () => {
                           <p className="text-sm font-medium text-gray-900 truncate" title={model.model}>
                             {formatModelName(model.model)}
                           </p>
-                          <p className="text-xs text-gray-500">
-                            Średni czas: {formatDuration(model.average_duration)}
-                          </p>
+                          <p className="text-xs text-gray-500">Średni czas: {formatDuration(model.average_duration)}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant={index === 0 ? "default" : "outline"}>
-                            {model.count} użyć
-                          </Badge>
+                          <Badge variant={index === 0 ? "default" : "outline"}>{model.count} użyć</Badge>
                         </div>
                       </div>
                     ))}
@@ -456,4 +441,4 @@ const ProfileView = () => {
   );
 };
 
-export default ProfileView; 
+export default ProfileView;

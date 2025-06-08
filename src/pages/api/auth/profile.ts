@@ -7,33 +7,26 @@ export const GET: APIRoute = async ({ locals }) => {
   try {
     // Sprawdzenie czy użytkownik jest zalogowany
     if (!locals.user) {
-      return new Response(
-        JSON.stringify({ error: "Nie jesteś zalogowany" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Nie jesteś zalogowany" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Pobranie danych użytkownika z Supabase
     const { data: user, error } = await supabaseClient.auth.getUser();
-    
+
     if (error || !user.user) {
-      return new Response(
-        JSON.stringify({ error: "Nie udało się pobrać danych użytkownika" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Nie udało się pobrać danych użytkownika" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Określamy avatar URL na podstawie metadata lub płci
     const gender = user.user.user_metadata?.gender;
-    const defaultAvatarUrl = gender === "female" 
-      ? "https://avatar.iran.liara.run/public/51"
-      : "https://avatar.iran.liara.run/public/2";
+    const defaultAvatarUrl =
+      gender === "female" ? "https://avatar.iran.liara.run/public/51" : "https://avatar.iran.liara.run/public/2";
 
     const userData = {
       email: user.user.email,
@@ -47,7 +40,6 @@ export const GET: APIRoute = async ({ locals }) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
     console.error("Błąd podczas pobierania profilu:", error);
     return new Response(
@@ -61,4 +53,4 @@ export const GET: APIRoute = async ({ locals }) => {
       }
     );
   }
-}; 
+};

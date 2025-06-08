@@ -17,7 +17,7 @@ export const registerSchema = z
     password_confirmation: z.string(),
     gender: z.enum(["male", "female"], {
       required_error: "Płeć jest wymagana",
-      invalid_type_error: "Wybierz płeć: mężczyzna lub kobieta"
+      invalid_type_error: "Wybierz płeć: mężczyzna lub kobieta",
     }),
   })
   .refine((data) => data.password === data.password_confirmation, {

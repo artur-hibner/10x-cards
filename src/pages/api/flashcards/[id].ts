@@ -117,7 +117,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     let requestBody;
     try {
       requestBody = await request.json();
-    } catch (error) {
+    } catch {
       return new Response(
         JSON.stringify({
           error: "Nieprawidłowy format JSON",

@@ -12,24 +12,21 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
   try {
     // Sprawdzenie czy użytkownik jest zalogowany
     if (!locals.user) {
-      return new Response(
-        JSON.stringify({ error: "Nie jesteś zalogowany" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Nie jesteś zalogowany" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const body = await request.json();
-    
+
     // Walidacja danych
     const result = updateProfileSchema.safeParse(body);
     if (!result.success) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Nieprawidłowe dane",
-          details: result.error.errors 
+          details: result.error.errors,
         }),
         {
           status: 400,
@@ -42,31 +39,30 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
 
     // Przygotowanie metadanych do aktualizacji
     const updateData: Record<string, string> = {};
-    
+
     if (gender) {
       updateData.gender = gender;
       // Jeśli zmienia się płeć, aktualizuj domyślny avatar
       if (!avatar_url) {
-        updateData.avatar_url = gender === "female" 
-          ? "https://avatar.iran.liara.run/public/51"
-          : "https://avatar.iran.liara.run/public/2";
+        updateData.avatar_url =
+          gender === "female" ? "https://avatar.iran.liara.run/public/51" : "https://avatar.iran.liara.run/public/2";
       }
     }
-    
+
     if (avatar_url) {
       updateData.avatar_url = avatar_url;
     }
 
     // Aktualizacja user metadata w Supabase
     const { error: updateError } = await locals.supabase.auth.updateUser({
-      data: updateData
+      data: updateData,
     });
 
     if (updateError) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Nie udało się zaktualizować profilu",
-          details: updateError.message 
+          details: updateError.message,
         }),
         {
           status: 500,
@@ -76,17 +72,16 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         message: "Profil został zaktualizowany pomyślnie",
         avatar_url: updateData.avatar_url,
-        gender: updateData.gender
+        gender: updateData.gender,
       }),
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }
     );
-
   } catch (error) {
     console.error("Błąd podczas aktualizacji profilu:", error);
     return new Response(
@@ -100,4 +95,4 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       }
     );
   }
-}; 
+};

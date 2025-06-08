@@ -8,7 +8,7 @@ export const prerender = false;
 // Schemat walidacji dla parametrów query
 const errorLogsQuerySchema = z.object({
   from: z.string().pipe(z.coerce.date()).optional(),
-  to: z.string().pipe(z.coerce.date()).optional(), 
+  to: z.string().pipe(z.coerce.date()).optional(),
   limit: z.string().pipe(z.coerce.number().min(1).max(100).default(50)).optional().default("50"),
   offset: z.string().pipe(z.coerce.number().min(0).default(0)).optional().default("0"),
 });
@@ -58,7 +58,7 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     // Mapowanie na DTO
-    const logsDto: GenerationErrorLogDTO[] = errorLogs.map(log => ({
+    const logsDto: GenerationErrorLogDTO[] = errorLogs.map((log) => ({
       id: log.id.toString(),
       generation_id: log.generation_id,
       timestamp: log.created_at,
@@ -69,7 +69,7 @@ export const GET: APIRoute = async ({ url }) => {
         parameters: {
           model: log.model,
           source_text_length: log.source_text_length,
-        }
+        },
       } as ModelInputData,
       stack_trace: log.error_message, // W rzeczywistej implementacji można dodać osobną kolumnę
     }));
@@ -83,7 +83,6 @@ export const GET: APIRoute = async ({ url }) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
     console.error("Błąd podczas pobierania logów błędów generacji:", error);
     return new Response(
@@ -97,4 +96,4 @@ export const GET: APIRoute = async ({ url }) => {
       }
     );
   }
-}; 
+};

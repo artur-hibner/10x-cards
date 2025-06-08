@@ -7,9 +7,7 @@ export const prerender = false;
 export const GET: APIRoute = async () => {
   try {
     // Pobranie podstawowych statystyk generacji
-    const { data: generationsData, error: generationsError } = await supabaseClient
-      .from("generations")
-      .select("*");
+    const { data: generationsData, error: generationsError } = await supabaseClient.from("generations").select("*");
 
     if (generationsError) {
       throw new Error(`Błąd podczas pobierania danych generacji: ${generationsError.message}`);
@@ -32,14 +30,14 @@ export const GET: APIRoute = async () => {
     const acceptanceRate = totalGeneratedFlashcards > 0 ? totalAcceptedFlashcards / totalGeneratedFlashcards : 0;
 
     // Statystyki edycji
-    const totalUneditedAccepted = flashcardsData.filter(f => f.source === "ai-full").length;
-    const totalEditedAccepted = flashcardsData.filter(f => f.source === "ai-edited").length;
+    const totalUneditedAccepted = flashcardsData.filter((f) => f.source === "ai-full").length;
+    const totalEditedAccepted = flashcardsData.filter((f) => f.source === "ai-edited").length;
     const editRate = totalAcceptedFlashcards > 0 ? totalEditedAccepted / totalAcceptedFlashcards : 0;
 
     // Statystyki według modeli
     const modelStats = new Map<string, { count: number; totalDuration: number }>();
-    
-    generationsData.forEach(gen => {
+
+    generationsData.forEach((gen) => {
       const existing = modelStats.get(gen.model) || { count: 0, totalDuration: 0 };
       modelStats.set(gen.model, {
         count: existing.count + 1,
@@ -68,7 +66,6 @@ export const GET: APIRoute = async () => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
     console.error("Błąd podczas pobierania statystyk generacji:", error);
     return new Response(
@@ -82,4 +79,4 @@ export const GET: APIRoute = async () => {
       }
     );
   }
-}; 
+};

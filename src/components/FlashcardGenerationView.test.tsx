@@ -8,11 +8,11 @@ import type { CreateGenerationResponseDTO } from "../types";
 global.fetch = vi.fn();
 
 // Mockowanie window.location.href
-Object.defineProperty(window, 'location', {
+Object.defineProperty(window, "location", {
   value: {
-    href: ''
+    href: "",
   },
-  writable: true
+  writable: true,
 });
 
 // Tworzymy typ dla mocka fetch
@@ -34,7 +34,7 @@ describe("FlashcardGenerationView", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     // Resetuj window.location.href
-    window.location.href = '';
+    window.location.href = "";
     // Mockowanie odpowiedzi z API
     (global.fetch as unknown as MockFetchResponse).mockResolvedValue({
       ok: true,
@@ -86,9 +86,9 @@ describe("FlashcardGenerationView", () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ 
-        source_text: validText, 
-        model_id: "deepseek-chat-v3" // domyślny model
+      body: JSON.stringify({
+        source_text: validText,
+        model_id: "deepseek-chat-v3", // domyślny model
       }),
     });
   });
@@ -136,13 +136,12 @@ describe("FlashcardGenerationView", () => {
   });
 
   it("powinien wyświetlać loading state podczas generowania", async () => {
-    // Mockujemy fetch żeby zawiesił się na chwilę
-    let resolvePromise: (value: any) => void;
-    const pendingPromise = new Promise((resolve) => {
-      resolvePromise = resolve;
+    // Mockujemy fetch żeby zwrócił pending promise
+    const pendingPromise = new Promise(() => {
+      // Never resolves during test
     });
 
-    (global.fetch as unknown as MockFetchResponse).mockResolvedValue(pendingPromise as any);
+    (global.fetch as ReturnType<typeof vi.fn>).mockReturnValue(pendingPromise);
 
     render(<FlashcardGenerationView />);
 
@@ -155,25 +154,19 @@ describe("FlashcardGenerationView", () => {
     const generateButton = screen.getByText("Generuj fiszki");
     await userEvent.click(generateButton);
 
-    // Sprawdź czy przycisk pokazuje loading state (jeszcze przed resolve promise)
+    // Sprawdź czy przycisk pokazuje loading state
     expect(screen.getByText("Generowanie...")).toBeInTheDocument();
     expect(screen.getByText("Generowanie propozycji fiszek przy użyciu AI...")).toBeInTheDocument();
-
-    // Resolve promise żeby zakończyć test
-    resolvePromise!({
-      ok: true,
-      json: () => Promise.resolve(mockGenerationResponse),
-    });
   });
 
   it("powinien pozwalać na zmianę modelu AI", async () => {
     render(<FlashcardGenerationView />);
 
     const modelSelect = screen.getByDisplayValue("DeepSeek Chat v3");
-    
+
     // Zmień model
     fireEvent.change(modelSelect, { target: { value: "gemini-2-flash-exp" } });
-    
+
     // Sprawdź czy model się zmienił
     expect(screen.getByDisplayValue("Gemini 2.0 Flash Exp")).toBeInTheDocument();
     expect(screen.getByText("google/gemini-2.0-flash-exp:free")).toBeInTheDocument();

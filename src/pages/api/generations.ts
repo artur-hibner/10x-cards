@@ -43,7 +43,11 @@ export const GET: APIRoute = async ({ url }) => {
     const offset = (Number(page) - 1) * Number(limit);
 
     // Pobranie generacji z paginacją
-    const { data: generations, error: fetchError, count } = await supabaseClient
+    const {
+      data: generations,
+      error: fetchError,
+      count,
+    } = await supabaseClient
       .from("generations")
       .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
@@ -54,7 +58,7 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     // Mapowanie na DTO (bez flashcards_proposals dla listy)
-    const generationsDto = generations.map(gen => ({
+    const generationsDto = generations.map((gen) => ({
       generation_id: gen.id,
       model: gen.model,
       generated_count: gen.generated_count,

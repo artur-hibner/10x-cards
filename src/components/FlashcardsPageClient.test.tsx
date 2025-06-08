@@ -19,10 +19,11 @@ describe("FlashcardsPageClient", () => {
     vi.resetAllMocks();
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        flashcards: [],
-        pagination: { page: 1, limit: 10, total: 0 },
-      }),
+      json: () =>
+        Promise.resolve({
+          flashcards: [],
+          pagination: { page: 1, limit: 10, total: 0 },
+        }),
     });
   });
 
@@ -30,4 +31,4 @@ describe("FlashcardsPageClient", () => {
     render(<FlashcardsPageClient />);
     expect(screen.getByText("Ładowanie fiszek...")).toBeInTheDocument();
   });
-}); 
+});

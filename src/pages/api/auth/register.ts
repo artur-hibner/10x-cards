@@ -26,14 +26,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { email, password, gender } = result.data;
 
     // Tworzymy URL avatara na podstawie płci
-    const avatarUrl = gender === "female" 
-      ? "https://avatar.iran.liara.run/public/51"
-      : "https://avatar.iran.liara.run/public/2";
+    const avatarUrl =
+      gender === "female" ? "https://avatar.iran.liara.run/public/51" : "https://avatar.iran.liara.run/public/2";
 
     const authService = new SupabaseAuthService(locals.supabase);
     const { success, error } = await authService.signUp(email, password, {
       gender,
-      avatar_url: avatarUrl
+      avatar_url: avatarUrl,
     });
 
     if (!success) {

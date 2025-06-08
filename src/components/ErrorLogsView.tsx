@@ -15,8 +15,8 @@ const ErrorLogsView = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Stan dla filtrów
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const [offset, setOffset] = useState<number>(0);
   const [limit] = useState<number>(20);
 
@@ -46,11 +46,11 @@ const ErrorLogsView = () => {
         offset: newOffset.toString(),
       });
 
-      if (dateFrom) params.append('from', dateFrom);
-      if (dateTo) params.append('to', dateTo);
+      if (dateFrom) params.append("from", dateFrom);
+      if (dateTo) params.append("to", dateTo);
 
       const response = await fetch(`/api/generations/error-logs?${params}`);
-      
+
       if (!response.ok) {
         throw new Error(`Błąd pobierania logów: ${response.status}`);
       }
@@ -59,7 +59,6 @@ const ErrorLogsView = () => {
       setLogs(data.logs);
       setTotal(data.total);
       setOffset(newOffset);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
       setError(errorMessage);
@@ -80,29 +79,29 @@ const ErrorLogsView = () => {
   };
 
   const handleClearFilters = () => {
-    setDateFrom('');
-    setDateTo('');
+    setDateFrom("");
+    setDateTo("");
     fetchErrorLogs(0);
   };
 
   // Formatowanie daty
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pl-PL');
+    return new Date(dateString).toLocaleString("pl-PL");
   };
 
   // Formatowanie typu błędu
   const getErrorBadgeVariant = (errorType: string) => {
     switch (errorType.toLowerCase()) {
-      case 'timeout':
-      case 'timeouterror':
-        return 'secondary' as const;
-      case 'networkerror':
-      case 'connectionerror':
-        return 'outline' as const;
-      case 'validationerror':
-        return 'destructive' as const;
+      case "timeout":
+      case "timeouterror":
+        return "secondary" as const;
+      case "networkerror":
+      case "connectionerror":
+        return "outline" as const;
+      case "validationerror":
+        return "destructive" as const;
       default:
-        return 'default' as const;
+        return "default" as const;
     }
   };
 
@@ -197,9 +196,7 @@ const ErrorLogsView = () => {
       ) : error ? (
         <div className="text-center py-10">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={() => fetchErrorLogs(offset)}>
-            Spróbuj ponownie
-          </Button>
+          <Button onClick={() => fetchErrorLogs(offset)}>Spróbuj ponownie</Button>
         </div>
       ) : logs.length === 0 ? (
         <Card>
@@ -219,9 +216,7 @@ const ErrorLogsView = () => {
                       {formatDate(log.timestamp)} • Generation #{log.generation_id}
                     </p>
                   </div>
-                  <Badge variant={getErrorBadgeVariant(log.error_type)}>
-                    {log.error_type}
-                  </Badge>
+                  <Badge variant={getErrorBadgeVariant(log.error_type)}>{log.error_type}</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -229,9 +224,7 @@ const ErrorLogsView = () => {
                 <div>
                   <h4 className="font-medium text-sm mb-2">Komunikat błędu:</h4>
                   <div className="bg-red-50 border border-red-200 rounded p-3">
-                    <p className="text-sm text-red-800 font-mono">
-                      {log.error_message}
-                    </p>
+                    <p className="text-sm text-red-800 font-mono">{log.error_message}</p>
                   </div>
                 </div>
 
@@ -257,9 +250,7 @@ const ErrorLogsView = () => {
                   <div>
                     <h4 className="font-medium text-sm mb-2">Stack trace:</h4>
                     <div className="bg-gray-900 text-gray-100 rounded p-3 overflow-x-auto">
-                      <pre className="text-xs whitespace-pre-wrap">
-                        {log.stack_trace}
-                      </pre>
+                      <pre className="text-xs whitespace-pre-wrap">{log.stack_trace}</pre>
                     </div>
                   </div>
                 )}
@@ -272,21 +263,13 @@ const ErrorLogsView = () => {
       {/* Paginacja */}
       {totalPages > 1 && (
         <div className="flex justify-between items-center">
-          <Button
-            onClick={handlePrevPage}
-            disabled={offset === 0}
-            variant="outline"
-          >
+          <Button onClick={handlePrevPage} disabled={offset === 0} variant="outline">
             Poprzednia strona
           </Button>
           <span className="text-sm text-gray-600">
             Strona {currentPage} z {totalPages}
           </span>
-          <Button
-            onClick={handleNextPage}
-            disabled={offset + limit >= total}
-            variant="outline"
-          >
+          <Button onClick={handleNextPage} disabled={offset + limit >= total} variant="outline">
             Następna strona
           </Button>
         </div>
@@ -298,4 +281,4 @@ const ErrorLogsView = () => {
   );
 };
 
-export default ErrorLogsView; 
+export default ErrorLogsView;

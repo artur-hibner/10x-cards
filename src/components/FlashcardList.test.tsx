@@ -88,11 +88,7 @@ describe("FlashcardList", () => {
 
   it("powinien wyświetlać komunikat gdy brak propozycji", () => {
     render(
-      <FlashcardList
-        proposals={[]}
-        onUpdateProposal={mockUpdateProposal}
-        onRemoveProposal={mockRemoveProposal}
-      />
+      <FlashcardList proposals={[]} onUpdateProposal={mockUpdateProposal} onRemoveProposal={mockRemoveProposal} />
     );
 
     expect(screen.getByText("Brak propozycji fiszek do wyświetlenia.")).toBeInTheDocument();
@@ -159,4 +155,4 @@ describe("FlashcardList", () => {
       source: "ai-edited",
     });
   });
-}); 
+});

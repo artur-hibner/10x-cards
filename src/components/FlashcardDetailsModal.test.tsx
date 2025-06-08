@@ -7,7 +7,9 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 describe("FlashcardDetailsModal", () => {
-  const mockOnClose = vi.fn();
+  const mockOnClose = vi.fn().mockImplementation(() => {
+    // Mock function for closing modal
+  });
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -20,7 +22,12 @@ describe("FlashcardDetailsModal", () => {
   });
 
   it("powinien wyświetlać loading state podczas pobierania danych", () => {
-    mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockFetch.mockImplementation(
+      () =>
+        new Promise(() => {
+          // Never resolves for testing loading state
+        })
+    ); // Never resolves
 
     render(<FlashcardDetailsModal isOpen={true} onClose={mockOnClose} flashcardId={1} />);
 
