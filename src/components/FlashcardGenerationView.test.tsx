@@ -7,9 +7,18 @@ import type { CreateGenerationResponseDTO } from "../types";
 // Mockowanie fetch API
 global.fetch = vi.fn();
 
+// Mockowanie window.location.href
+Object.defineProperty(window, 'location', {
+  value: {
+    href: ''
+  },
+  writable: true
+});
+
 // Tworzymy typ dla mocka fetch
 interface MockFetchResponse {
   mockResolvedValue: (value: Partial<Response>) => void;
+  mockRejectedValue: (error: Error) => void;
 }
 
 const mockGenerationResponse: Partial<CreateGenerationResponseDTO> = {
@@ -18,11 +27,14 @@ const mockGenerationResponse: Partial<CreateGenerationResponseDTO> = {
     { id: "test1", front: "Pytanie 1", back: "Odpowiedź 1" },
     { id: "test2", front: "Pytanie 2", back: "Odpowiedź 2" },
   ],
+  generated_count: 2,
 };
 
 describe("FlashcardGenerationView", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // Resetuj window.location.href
+    window.location.href = '';
     // Mockowanie odpowiedzi z API
     (global.fetch as unknown as MockFetchResponse).mockResolvedValue({
       ok: true,
@@ -68,17 +80,20 @@ describe("FlashcardGenerationView", () => {
     const generateButton = screen.getByText("Generuj fiszki");
     await userEvent.click(generateButton);
 
-    // Sprawdź, czy fetch został wywołany z odpowiednimi parametrami
+    // Sprawdź, czy fetch został wywołany z odpowiednimi parametrami (włączając model_id)
     expect(global.fetch).toHaveBeenCalledWith("/api/generations", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ source_text: validText }),
+      body: JSON.stringify({ 
+        source_text: validText, 
+        model_id: "deepseek-chat-v3" // domyślny model
+      }),
     });
   });
 
-  it("powinien wyświetlać propozycje fiszek po udanym generowaniu", async () => {
+  it("powinien wyświetlać toast po udanym generowaniu", async () => {
     render(<FlashcardGenerationView />);
 
     // Wprowadź wystarczająco długi tekst
@@ -90,12 +105,9 @@ describe("FlashcardGenerationView", () => {
     const generateButton = screen.getByText("Generuj fiszki");
     await userEvent.click(generateButton);
 
-    // Sprawdź, czy propozycje fiszek zostały wyświetlone
+    // Sprawdź, czy wyświetlono toast o sukcesie
     await waitFor(() => {
-      expect(screen.getByText("Pytanie 1")).toBeInTheDocument();
-      expect(screen.getByText("Odpowiedź 1")).toBeInTheDocument();
-      expect(screen.getByText("Pytanie 2")).toBeInTheDocument();
-      expect(screen.getByText("Odpowiedź 2")).toBeInTheDocument();
+      expect(screen.getByText("Wygenerowano 2 propozycji fiszek")).toBeInTheDocument();
     });
   });
 
@@ -123,41 +135,47 @@ describe("FlashcardGenerationView", () => {
     });
   });
 
-  it("powinien zapisywać wszystkie fiszki", async () => {
+  it("powinien wyświetlać loading state podczas generowania", async () => {
+    // Mockujemy fetch żeby zawiesił się na chwilę
+    let resolvePromise: (value: any) => void;
+    const pendingPromise = new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+
+    (global.fetch as unknown as MockFetchResponse).mockResolvedValue(pendingPromise as any);
+
     render(<FlashcardGenerationView />);
 
-    // Wprowadź wystarczająco długi tekst i wygeneruj fiszki
+    // Wprowadź wystarczająco długi tekst
     const textArea = screen.getByRole("textbox");
     const validText = "a".repeat(1000);
     fireEvent.change(textArea, { target: { value: validText } });
 
+    // Kliknij przycisk generowania
     const generateButton = screen.getByText("Generuj fiszki");
     await userEvent.click(generateButton);
 
-    // Poczekaj na wyświetlenie fiszek
-    await waitFor(() => {
-      expect(screen.getByText("Pytanie 1")).toBeInTheDocument();
-    });
+    // Sprawdź czy przycisk pokazuje loading state (jeszcze przed resolve promise)
+    expect(screen.getByText("Generowanie...")).toBeInTheDocument();
+    expect(screen.getByText("Generowanie propozycji fiszek przy użyciu AI...")).toBeInTheDocument();
 
-    // Mockujemy kolejne wywołanie API do zapisywania fiszek
-    (global.fetch as unknown as MockFetchResponse).mockResolvedValue({
+    // Resolve promise żeby zakończyć test
+    resolvePromise!({
       ok: true,
-      json: () => Promise.resolve({ flashcards: [1, 2] }),
+      json: () => Promise.resolve(mockGenerationResponse),
     });
+  });
 
-    // Kliknij przycisk zapisu wszystkich fiszek
-    const saveAllButton = screen.getByText("Zapisz wszystkie");
-    await userEvent.click(saveAllButton);
+  it("powinien pozwalać na zmianę modelu AI", async () => {
+    render(<FlashcardGenerationView />);
 
-    // Sprawdź, czy fetch został wywołany z odpowiednimi parametrami
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/flashcards",
-      expect.objectContaining({
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-    );
+    const modelSelect = screen.getByDisplayValue("DeepSeek Chat v3");
+    
+    // Zmień model
+    fireEvent.change(modelSelect, { target: { value: "gemini-2-flash-exp" } });
+    
+    // Sprawdź czy model się zmienił
+    expect(screen.getByDisplayValue("Gemini 2.0 Flash Exp")).toBeInTheDocument();
+    expect(screen.getByText("google/gemini-2.0-flash-exp:free")).toBeInTheDocument();
   });
 });
