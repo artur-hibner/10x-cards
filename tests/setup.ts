@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
-import { afterAll, afterEach, beforeAll, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import "@testing-library/jest-dom";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
 
 // Globalne mocki, które mogą być potrzebne we wszystkich testach
 beforeAll(() => {
@@ -17,4 +17,4 @@ afterEach(() => {
 // Czyszczenie po wszystkich testach
 afterAll(() => {
   vi.clearAllMocks();
-}); 
+});

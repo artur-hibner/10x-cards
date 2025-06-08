@@ -7,12 +7,7 @@ interface TextInputAreaProps {
   errorMessage?: string;
 }
 
-const TextInputArea: React.FC<TextInputAreaProps> = ({
-  value,
-  onChange,
-  onBlur,
-  errorMessage,
-}) => {
+const TextInputArea: React.FC<TextInputAreaProps> = ({ value, onChange, onBlur, errorMessage }) => {
   const charCount = value.length;
   const minChars = 1000;
   const maxChars = 10000;
@@ -49,4 +44,4 @@ const TextInputArea: React.FC<TextInputAreaProps> = ({
   );
 };
 
-export default TextInputArea; 
+export default TextInputArea;

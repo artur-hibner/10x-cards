@@ -27,12 +27,8 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
     setGeneralError,
     setFormData,
     handleChange,
-    handleSubmit
-  } = useForm<UpdatePasswordDTO, typeof updatePasswordSchema>(
-    initialData,
-    updatePasswordSchema,
-    auth.updatePassword
-  );
+    handleSubmit,
+  } = useForm<UpdatePasswordDTO, typeof updatePasswordSchema>(initialData, updatePasswordSchema, auth.updatePassword);
 
   // Sprawdzenie czy token jest dostępny
   useEffect(() => {
@@ -40,7 +36,7 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
       setGeneralError("Brak lub nieprawidłowy token resetowania hasła. Upewnij się, że kliknąłeś w poprawny link.");
     } else {
       // Ustawienie tokenu w formularzu
-      setFormData(prev => ({ ...prev, token }));
+      setFormData((prev) => ({ ...prev, token }));
     }
   }, [token, setGeneralError, setFormData]);
 
@@ -64,9 +60,9 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-center">Ustaw nowe hasło</h1>
-      
+
       {generalError && <FormError>{generalError}</FormError>}
-      
+
       {isSuccess ? (
         <FormSuccess>
           Twoje hasło zostało pomyślnie zresetowane. Możesz teraz się zalogować.
@@ -81,10 +77,8 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
         </FormSuccess>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Wprowadź nowe hasło dla swojego konta.
-          </p>
-          
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Wprowadź nowe hasło dla swojego konta.</p>
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Nowe hasło
@@ -102,9 +96,12 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
             />
             <FieldError error={errors.password} />
           </div>
-          
+
           <div>
-            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="password_confirmation"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Powtórz hasło
             </label>
             <input
@@ -120,17 +117,20 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
             />
             <FieldError error={errors.password_confirmation} />
           </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-brand-purple hover:bg-brand-purple/90 text-white py-2 mt-4" 
+
+          <Button
+            type="submit"
+            className="w-full bg-brand-purple hover:bg-brand-purple/90 text-white py-2 mt-4"
             disabled={isLoading}
           >
             {isLoading ? "Aktualizowanie..." : "Ustaw nowe hasło"}
           </Button>
-          
+
           <div className="text-center mt-4">
-            <a href="/auth/login" className="text-sm text-brand-purple hover:text-brand-purple/80 dark:text-brand-purple dark:hover:text-brand-purple/80">
+            <a
+              href="/auth/login"
+              className="text-sm text-brand-purple hover:text-brand-purple/80 dark:text-brand-purple dark:hover:text-brand-purple/80"
+            >
               Wróć do strony logowania
             </a>
           </div>
@@ -138,4 +138,4 @@ export function UpdatePasswordForm({ token }: UpdatePasswordFormProps) {
       )}
     </div>
   );
-} 
+}

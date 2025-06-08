@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
 import { SupabaseAuthService } from "../../../lib/auth/supabase-auth";
 import { updatePasswordSchema } from "../../../lib/auth/validation";
-import { 
-  createValidationErrorResponse, 
+import {
+  createValidationErrorResponse,
   createAuthErrorResponse,
   createSuccessResponse,
-  createServerErrorResponse
+  createServerErrorResponse,
 } from "../../../lib/auth/api-utils";
 
 export const prerender = false;
@@ -30,12 +30,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return createAuthErrorResponse(error);
     }
 
-    return createSuccessResponse(
-      "Hasło zostało pomyślnie zaktualizowane",
-      "/auth/login"
-    );
+    return createSuccessResponse("Hasło zostało pomyślnie zaktualizowane", "/auth/login");
   } catch (error) {
     console.error("Nieoczekiwany błąd podczas aktualizacji hasła:", error);
     return createServerErrorResponse("Wystąpił nieoczekiwany błąd podczas aktualizacji hasła");
   }
-}; 
+};

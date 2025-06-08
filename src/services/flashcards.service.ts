@@ -136,4 +136,52 @@ export class FlashcardsService {
       throw error;
     }
   }
+
+  /**
+   * Pobiera pojedynczą fiszkę po ID
+   * @param id ID fiszki
+   * @returns Fiszka lub null jeśli nie została znaleziona
+   */
+  public async getFlashcardById(id: number): Promise<FlashcardDTO | null> {
+    try {
+      // Walidacja ID
+      if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("ID fiszki musi być liczbą całkowitą większą od 0");
+      }
+
+      // Pobieranie fiszki z bazy danych
+      const { data: flashcard, error } = await supabaseClient
+        .from("flashcards")
+        .select("id, front, back, source, generation_id, created_at, updated_at")
+        .eq("id", id)
+        .eq("user_id", DEFAULT_USER_ID)
+        .single();
+
+      if (error) {
+        // Jeśli fiszka nie została znaleziona
+        if (error.code === "PGRST116") {
+          return null;
+        }
+        throw new Error(`Błąd podczas pobierania fiszki: ${error.message}`);
+      }
+
+      if (!flashcard) {
+        return null;
+      }
+
+      // Mapowanie na DTO
+      return {
+        id: flashcard.id,
+        front: flashcard.front,
+        back: flashcard.back,
+        source: flashcard.source as FlashcardSource,
+        generation_id: flashcard.generation_id,
+        created_at: flashcard.created_at,
+        updated_at: flashcard.updated_at,
+      };
+    } catch (error) {
+      console.error("Błąd podczas pobierania fiszki po ID:", error);
+      throw error;
+    }
+  }
 }

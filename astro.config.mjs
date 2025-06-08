@@ -10,9 +10,9 @@ import node from "@astrojs/node";
 export default defineConfig({
   output: "server",
   integrations: [react(), sitemap()],
-  server: { 
+  server: {
     port: 3000,
-    host: true  // Nasłuchuj na wszystkich interfejsach
+    host: true, // Nasłuchuj na wszystkich interfejsach
   },
   vite: {
     plugins: [tailwindcss()],
@@ -21,6 +21,6 @@ export default defineConfig({
     mode: "standalone",
   }),
   experimental: {
-    session: true
-  }
+    session: true,
+  },
 });

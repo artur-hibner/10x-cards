@@ -3,15 +3,15 @@ import { z } from "zod";
 
 /**
  * Hook do obsługi formularzy z walidacją Zod
- * 
+ *
  * @param initialData - Początkowe dane formularza
  * @param schema - Schema Zod do walidacji formularza
  * @param onSubmit - Funkcja wywoływana przy pomyślnej walidacji i wysyłce formularza
  */
-export function useForm<T extends Record<string, any>, S extends z.ZodType<T>>(
+export function useForm<T extends Record<string, unknown>, S extends z.ZodType<T>>(
   initialData: T,
   schema: S,
-  onSubmit: (data: T) => Promise<{success: boolean; message?: string; details?: Record<string, string[]>}>
+  onSubmit: (data: T) => Promise<{ success: boolean; message?: string; details?: Record<string, string[]> }>
 ) {
   const [formData, setFormData] = useState<T>(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -26,7 +26,7 @@ export function useForm<T extends Record<string, any>, S extends z.ZodType<T>>(
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Usuwanie błędu po edycji pola
     if (errors[name]) {
       setErrors((prev) => {
@@ -39,12 +39,12 @@ export function useForm<T extends Record<string, any>, S extends z.ZodType<T>>(
         return newErrors;
       });
     }
-    
+
     // Usuwanie ogólnego błędu i szczegółów błędów API po jakiejkolwiek zmianie
     if (generalError) {
       setGeneralError(null);
     }
-    
+
     if (apiErrorDetails) {
       setApiErrorDetails(undefined);
     }
@@ -59,23 +59,23 @@ export function useForm<T extends Record<string, any>, S extends z.ZodType<T>>(
     setGeneralError(null);
     setErrors({});
     setApiErrorDetails(undefined);
-    
+
     try {
       // Walidacja danych po stronie klienta
       schema.parse(formData);
-      
+
       // Wywołanie funkcji onSubmit dostarczonej jako parametr
       const result = await onSubmit(formData);
-      
+
       if (result.success) {
         setIsSuccess(true);
       } else {
         setGeneralError(result.message || "Wystąpił błąd");
-        
+
         // Zapisz szczegóły błędu API, jeśli są dostępne
         if (result.details && Object.keys(result.details).length > 0) {
           setApiErrorDetails(result.details);
-          
+
           // Ustawianie błędów walidacji dla poszczególnych pól
           const fieldErrors: Record<string, string> = {};
           Object.entries(result.details).forEach(([field, errorMsgs]) => {
@@ -83,7 +83,7 @@ export function useForm<T extends Record<string, any>, S extends z.ZodType<T>>(
               fieldErrors[field] = errorMsgs[0];
             }
           });
-          
+
           if (Object.keys(fieldErrors).length > 0) {
             setErrors(fieldErrors);
           }
@@ -133,6 +133,6 @@ export function useForm<T extends Record<string, any>, S extends z.ZodType<T>>(
     resetForm,
     setFormData,
     setGeneralError,
-    setIsSuccess
+    setIsSuccess,
   };
-} 
+}

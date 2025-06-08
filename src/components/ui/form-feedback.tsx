@@ -10,20 +10,20 @@ interface FormErrorProps {
  */
 export const FormError = ({ children, details }: FormErrorProps) => {
   if (!children) return null;
-  
+
   return (
     <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
       <p className="font-medium">{children}</p>
-      
+
       {details && Object.keys(details).length > 0 && (
         <ul className="mt-2 text-sm list-disc pl-5">
-          {Object.entries(details).map(([field, errors]) => (
+          {Object.entries(details).map(([field, errors]) =>
             errors.map((error, index) => (
               <li key={`${field}-${index}`}>
                 <span className="font-medium">{field}</span>: {error}
               </li>
             ))
-          ))}
+          )}
         </ul>
       )}
     </div>
@@ -35,7 +35,7 @@ export const FormError = ({ children, details }: FormErrorProps) => {
  */
 export const FieldError = ({ error }: { error?: string }) => {
   if (!error) return null;
-  
+
   return <p className="mt-1 text-sm text-red-500">{error}</p>;
 };
 
@@ -49,7 +49,7 @@ interface FormSuccessProps {
  */
 export const FormSuccess = ({ children, title }: FormSuccessProps) => {
   if (!children) return null;
-  
+
   return (
     <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4 mb-6">
       {title && <p className="font-medium text-green-800 dark:text-green-400 mb-2">{title}</p>}
@@ -63,26 +63,19 @@ export const FormSuccess = ({ children, title }: FormSuccessProps) => {
  */
 export const FormWarning = ({ children }: { children: React.ReactNode }) => {
   if (!children) return null;
-  
-  return (
-    <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
-      {children}
-    </div>
-  );
+
+  return <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">{children}</div>;
 };
+
+interface LoadingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  isLoading: boolean;
+  loadingText: string;
+}
 
 /**
  * Komponent do wyświetlania przycisku ładowania
  */
-export const LoadingButton = ({
-  isLoading,
-  loadingText,
-  children,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  isLoading: boolean;
-  loadingText: string;
-}) => {
+export const LoadingButton = ({ isLoading, loadingText, children, ...props }: LoadingButtonProps) => {
   return (
     <button
       {...props}
@@ -92,4 +85,4 @@ export const LoadingButton = ({
       {isLoading ? loadingText : children}
     </button>
   );
-}; 
+};

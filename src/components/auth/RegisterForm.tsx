@@ -13,26 +13,17 @@ export function RegisterForm() {
     password_confirmation: "",
   };
 
-  const {
-    formData,
-    errors,
-    isLoading,
-    generalError,
-    apiErrorDetails,
-    handleChange,
-    handleSubmit
-  } = useForm<UserRegisterDTO, typeof registerSchema>(
-    initialData,
-    registerSchema,
-    auth.register
-  );
+  const { formData, errors, isLoading, generalError, apiErrorDetails, handleChange, handleSubmit } = useForm<
+    UserRegisterDTO,
+    typeof registerSchema
+  >(initialData, registerSchema, auth.register);
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-center">Rejestracja</h1>
-      
+
       {generalError && <FormError details={apiErrorDetails}>{generalError}</FormError>}
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -53,7 +44,7 @@ export function RegisterForm() {
           />
           <FieldError error={errors.email} />
         </div>
-        
+
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Hasło
@@ -73,9 +64,12 @@ export function RegisterForm() {
           />
           <FieldError error={errors.password} />
         </div>
-        
+
         <div>
-          <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            htmlFor="password_confirmation"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             Powtórz hasło
           </label>
           <input
@@ -93,22 +87,25 @@ export function RegisterForm() {
           />
           <FieldError error={errors.password_confirmation} />
         </div>
-        
-        <Button 
-          type="submit" 
-          className="w-full bg-brand-purple hover:bg-brand-purple/90 text-white py-2 mt-4" 
+
+        <Button
+          type="submit"
+          className="w-full bg-brand-purple hover:bg-brand-purple/90 text-white py-2 mt-4"
           disabled={isLoading}
         >
           {isLoading ? "Rejestracja..." : "Zarejestruj się"}
         </Button>
-        
+
         <div className="text-center mt-4">
           <span className="text-sm text-gray-600 dark:text-gray-400">Masz już konto? </span>
-          <a href="/auth/login" className="text-sm text-brand-purple hover:text-brand-purple/80 dark:text-brand-purple dark:hover:text-brand-purple/80">
+          <a
+            href="/auth/login"
+            className="text-sm text-brand-purple hover:text-brand-purple/80 dark:text-brand-purple dark:hover:text-brand-purple/80"
+          >
             Zaloguj się
           </a>
         </div>
       </form>
     </div>
   );
-} 
+}

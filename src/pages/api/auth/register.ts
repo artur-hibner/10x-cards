@@ -1,12 +1,12 @@
 import type { APIRoute } from "astro";
 import { SupabaseAuthService } from "../../../lib/auth/supabase-auth";
 import { registerSchema } from "../../../lib/auth/validation";
-import { 
-  createValidationErrorResponse, 
+import {
+  createValidationErrorResponse,
   createAuthErrorResponse,
   createSuccessResponse,
   createServerErrorResponse,
-  HTTP_STATUS
+  HTTP_STATUS,
 } from "../../../lib/auth/api-utils";
 import { DEFAULT_REDIRECT_AFTER_LOGIN } from "../../../lib/auth/config";
 
@@ -32,13 +32,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return createAuthErrorResponse(error);
     }
 
-    return createSuccessResponse(
-      "Rejestracja zakończona pomyślnie", 
-      DEFAULT_REDIRECT_AFTER_LOGIN, 
-      HTTP_STATUS.CREATED
-    );
+    return createSuccessResponse("Rejestracja zakończona pomyślnie", DEFAULT_REDIRECT_AFTER_LOGIN, HTTP_STATUS.CREATED);
   } catch (error) {
     console.error("Nieoczekiwany błąd podczas rejestracji:", error);
     return createServerErrorResponse("Wystąpił nieoczekiwany błąd podczas rejestracji");
   }
-}; 
+};
