@@ -77,11 +77,14 @@ export const handleAuthError = (error: Error & { message?: string }): AuthError 
 export class SupabaseAuthService {
   constructor(private supabase: SupabaseClient<Database>) {}
 
-  async signUp(email: string, password: string) {
+  async signUp(email: string, password: string, metadata?: Record<string, string | number | boolean>) {
     try {
       const { data, error } = await this.supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: metadata || {},
+        },
       });
 
       if (error) throw error;

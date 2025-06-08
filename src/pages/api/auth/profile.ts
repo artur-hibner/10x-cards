@@ -29,11 +29,18 @@ export const GET: APIRoute = async ({ locals }) => {
       );
     }
 
+    // Określamy avatar URL na podstawie metadata lub płci
+    const gender = user.user.user_metadata?.gender;
+    const defaultAvatarUrl = gender === "female" 
+      ? "https://avatar.iran.liara.run/public/51"
+      : "https://avatar.iran.liara.run/public/2";
+
     const userData = {
       email: user.user.email,
       created_at: user.user.created_at,
       last_sign_in_at: user.user.last_sign_in_at,
-      avatar_url: user.user.user_metadata?.avatar_url || null,
+      avatar_url: user.user.user_metadata?.avatar_url || defaultAvatarUrl,
+      gender: gender || "male",
     };
 
     return new Response(JSON.stringify(userData), {

@@ -166,6 +166,7 @@ export interface UserAuthDTO {
 
 export interface UserRegisterDTO extends UserAuthDTO {
   password_confirmation: string;
+  gender: "male" | "female";
 }
 
 export interface RequestPasswordResetDTO {

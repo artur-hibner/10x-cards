@@ -15,6 +15,10 @@ export const registerSchema = z
       .regex(/[a-z]/, "Hasło musi zawierać przynajmniej jedną małą literę")
       .regex(/[0-9]/, "Hasło musi zawierać przynajmniej jedną cyfrę"),
     password_confirmation: z.string(),
+    gender: z.enum(["male", "female"], {
+      required_error: "Płeć jest wymagana",
+      invalid_type_error: "Wybierz płeć: mężczyzna lub kobieta"
+    }),
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: "Hasła muszą być identyczne",

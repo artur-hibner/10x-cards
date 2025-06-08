@@ -13,6 +13,7 @@ const ProfileView = () => {
   const [registrationDate, setRegistrationDate] = useState<string>("");
   const [lastLogin, setLastLogin] = useState<string>("");
   const [avatar, setAvatar] = useState<string>("");
+  const [gender, setGender] = useState<"male" | "female">("male");
   
   // Stan dla zmiany hasła
   const [currentPassword, setCurrentPassword] = useState<string>("");
@@ -52,6 +53,7 @@ const ProfileView = () => {
       setRegistrationDate(data.created_at || "");
       setLastLogin(data.last_sign_in_at || "");
       setAvatar(data.avatar_url || "");
+      setGender(data.gender || "male");
     } catch (err) {
       console.error("Błąd podczas pobierania profilu:", err);
       addToast("Nie udało się pobrać danych profilu", "error");
@@ -87,6 +89,35 @@ const ProfileView = () => {
     fetchUserProfile();
     fetchStatistics();
   }, []);
+
+  // Obsługa zmiany płci
+  const handleGenderChange = async (newGender: "male" | "female") => {
+    if (newGender === gender) return;
+
+    try {
+      const response = await fetch("/api/auth/update-profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          gender: newGender,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Błąd aktualizacji profilu: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setGender(newGender);
+      setAvatar(result.avatar_url); // Aktualizuj avatar
+      addToast("Profil został zaktualizowany", "success");
+    } catch (err) {
+      console.error("Błąd podczas aktualizacji profilu:", err);
+      addToast("Nie udało się zaktualizować profilu", "error");
+    }
+  };
 
   // Obsługa zmiany hasła
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -200,6 +231,32 @@ const ProfileView = () => {
               <div>
                 <p className="text-sm text-gray-600">Ostatnie logowanie</p>
                 <p className="font-medium">{formatDate(lastLogin)}</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Płeć</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleGenderChange("male")}
+                    className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                      gender === "male"
+                        ? "bg-blue-100 text-blue-800 border border-blue-300"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    👨 Mężczyzna
+                  </button>
+                  <button
+                    onClick={() => handleGenderChange("female")}
+                    className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                      gender === "female"
+                        ? "bg-pink-100 text-pink-800 border border-pink-300"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    👩 Kobieta
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>

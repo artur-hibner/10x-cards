@@ -11,6 +11,7 @@ export function RegisterForm() {
     email: "",
     password: "",
     password_confirmation: "",
+    gender: "male",
   };
 
   const { formData, errors, isLoading, generalError, apiErrorDetails, handleChange, handleSubmit } = useForm<
@@ -25,6 +26,39 @@ export function RegisterForm() {
       {generalError && <FormError details={apiErrorDetails}>{generalError}</FormError>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Płeć
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="gender"
+                value="male"
+                checked={formData.gender === "male"}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="mr-2 text-indigo-500 focus:ring-indigo-500"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">👨 Mężczyzna</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="gender"
+                value="female"
+                checked={formData.gender === "female"}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="mr-2 text-indigo-500 focus:ring-indigo-500"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">👩 Kobieta</span>
+            </label>
+          </div>
+          <FieldError error={errors.gender} />
+        </div>
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Adres email
