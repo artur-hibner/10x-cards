@@ -109,13 +109,7 @@ export function AuthStatus({ isLoggedIn, userEmail }: AuthStatusProps) {
       {showDropdown && (
         <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
           <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-            <a
-              href="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              role="menuitem"
-            >
-              Profil
-            </a>
+
             {sessionExpiryMinutes !== null && (
               <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
                 Sesja wygaśnie za: {sessionExpiryMinutes} {sessionExpiryMinutes === 1 ? "minutę" : "minut"}

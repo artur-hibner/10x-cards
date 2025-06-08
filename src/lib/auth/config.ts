@@ -6,7 +6,7 @@
  * Lista ścieżek wymagających zalogowania użytkownika.
  * Użytkownik niezalogowany zostanie przekierowany na stronę logowania.
  */
-export const AUTH_REQUIRED_PAGES = ["/generate", "/flashcards", "/study"];
+export const AUTH_REQUIRED_PAGES = ["/generate", "/flashcards", "/study", "/profile"];
 
 /**
  * Lista ścieżek dostępnych tylko dla niezalogowanych użytkowników.
