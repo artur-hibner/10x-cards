@@ -4,9 +4,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Textarea } from "./ui/textarea";
 
 import { FlashcardDetailsModal } from "./FlashcardDetailsModal";
-import type { FlashcardDTO } from "../types";
+import ToastNotifications, { type ToastMessage } from "./ToastNotifications";
+import type { FlashcardDTO, UpdateFlashcardDTO } from "../types";
 
 interface FlashcardsResponse {
   flashcards: FlashcardDTO[];
@@ -34,6 +37,23 @@ interface FiltersState {
   sortField: string;
   sortOrder: string;
   limit: string;
+}
+
+interface EditModalState {
+  isOpen: boolean;
+  flashcard: FlashcardDTO | null;
+  loading: boolean;
+  error: string | null;
+}
+
+interface DeleteModalState {
+  isOpen: boolean;
+  flashcard: FlashcardDTO | null;
+  loading: boolean;
+}
+
+interface ToastState {
+  toasts: ToastMessage[];
 }
 
 // Komponent do renderowania tekstu z łamaniem linii
@@ -75,6 +95,28 @@ export const FlashcardsPageClient: React.FC = () => {
   const [modalState, setModalState] = useState({
     isOpen: false,
     flashcardId: null as number | null,
+  });
+
+  const [editModalState, setEditModalState] = useState<EditModalState>({
+    isOpen: false,
+    flashcard: null,
+    loading: false,
+    error: null,
+  });
+
+  const [deleteModalState, setDeleteModalState] = useState<DeleteModalState>({
+    isOpen: false,
+    flashcard: null,
+    loading: false,
+  });
+
+  const [editForm, setEditForm] = useState({
+    front: "",
+    back: "",
+  });
+
+  const [toastState, setToastState] = useState<ToastState>({
+    toasts: [],
   });
 
   // Funkcja do budowania URL z parametrami
@@ -161,10 +203,6 @@ export const FlashcardsPageClient: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleString("pl-PL");
-  };
-
   // Obsługa filtrów
   const handleFilterChange = (key: keyof FiltersState, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -186,6 +224,175 @@ export const FlashcardsPageClient: React.FC = () => {
 
   const closeModal = () => {
     setModalState({ isOpen: false, flashcardId: null });
+  };
+
+  const handleEditFlashcard = (flashcard: FlashcardDTO, event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation(); // Zapobiega otwieraniu modala szczegółów
+    setEditForm({
+      front: flashcard.front,
+      back: flashcard.back,
+    });
+    setEditModalState({
+      isOpen: true,
+      flashcard,
+      loading: false,
+      error: null,
+    });
+  };
+
+  const isModified = (flashcard: FlashcardDTO): boolean => {
+    return flashcard.updated_at !== flashcard.created_at;
+  };
+
+  const getStatusBadge = (flashcard: FlashcardDTO) => {
+    if (isModified(flashcard)) {
+      return (
+        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+          Zmodyfikowana
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+        Oryginalna
+      </Badge>
+    );
+  };
+
+  const handleDeleteFlashcard = (flashcard: FlashcardDTO, event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation(); // Zapobiega otwieraniu modala szczegółów
+    setDeleteModalState({
+      isOpen: true,
+      flashcard,
+      loading: false,
+    });
+  };
+
+  const addToast = (message: string, type: "success" | "error" | "info" = "info") => {
+    const id = Date.now().toString();
+    const newToast: ToastMessage = {
+      id,
+      message,
+      type,
+    };
+
+    setToastState((prev) => ({
+      toasts: [...prev.toasts, newToast],
+    }));
+  };
+
+  const removeToast = (id: string) => {
+    setToastState((prev) => ({
+      toasts: prev.toasts.filter((toast) => toast.id !== id),
+    }));
+  };
+
+  const confirmDeleteFlashcard = async () => {
+    if (!deleteModalState.flashcard) return;
+
+    setDeleteModalState((prev) => ({ ...prev, loading: true }));
+
+    try {
+      const response = await fetch(`/api/flashcards/${deleteModalState.flashcard.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Błąd podczas usuwania fiszki");
+      }
+
+      // Zamknij modal i odśwież listę
+      setDeleteModalState({
+        isOpen: false,
+        flashcard: null,
+        loading: false,
+      });
+
+      // Pokaż toast sukcesu
+      addToast("Pomyślnie usunięto fiszkę", "success");
+
+      await fetchFlashcards(state.pagination.page);
+    } catch (error) {
+      console.error("Błąd podczas usuwania fiszki:", error);
+      addToast(error instanceof Error ? error.message : "Wystąpił błąd podczas usuwania fiszki", "error");
+      setDeleteModalState((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalState({
+      isOpen: false,
+      flashcard: null,
+      loading: false,
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editModalState.flashcard) return;
+
+    // Walidacja
+    if (!editForm.front.trim() && !editForm.back.trim()) {
+      setEditModalState((prev) => ({
+        ...prev,
+        error: "Przynajmniej jedno pole musi być wypełnione",
+      }));
+      return;
+    }
+
+    setEditModalState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const updateData: UpdateFlashcardDTO = {};
+      if (editForm.front.trim() !== editModalState.flashcard.front) {
+        updateData.front = editForm.front.trim();
+      }
+      if (editForm.back.trim() !== editModalState.flashcard.back) {
+        updateData.back = editForm.back.trim();
+      }
+
+      const response = await fetch(`/api/flashcards/${editModalState.flashcard.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Błąd podczas aktualizacji fiszki");
+      }
+
+      // Zamknij modal i odśwież listę
+      setEditModalState({
+        isOpen: false,
+        flashcard: null,
+        loading: false,
+        error: null,
+      });
+
+      // Pokaż toast sukcesu
+      addToast("Zapisano zmiany", "success");
+
+      await fetchFlashcards(state.pagination.page);
+    } catch (error) {
+      console.error("Błąd podczas zapisywania fiszki:", error);
+      setEditModalState((prev) => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : "Wystąpił błąd podczas zapisywania",
+      }));
+    }
+  };
+
+  const closeEditModal = () => {
+    setEditModalState({
+      isOpen: false,
+      flashcard: null,
+      loading: false,
+      error: null,
+    });
   };
 
   // Załaduj fiszki przy starcie
@@ -399,18 +606,44 @@ export const FlashcardsPageClient: React.FC = () => {
               className="p-6 hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => showFlashcardDetails(flashcard.id)}
             >
-              {/* Header z badge i metadanymi */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-2">
+              {/* Header z informacjami o fiszce */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={getSourceBadgeVariant(flashcard.source)}>{getSourceLabel(flashcard.source)}</Badge>
-                  {flashcard.generation_id && <span className="text-xs text-gray-500">#{flashcard.generation_id}</span>}
-                </div>
-                <div className="text-xs text-gray-500 text-right">
-                  <div>ID: {flashcard.id}</div>
-                  <div>Utworzono: {formatDate(flashcard.created_at)}</div>
-                  {flashcard.updated_at !== flashcard.created_at && (
-                    <div>Zaktualizowano: {formatDate(flashcard.updated_at)}</div>
+                  {getStatusBadge(flashcard)}
+                  {flashcard.generation_id && (
+                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                      Generacja #{flashcard.generation_id}
+                    </Badge>
                   )}
+                </div>
+
+                {/* Przyciski akcji */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => handleEditFlashcard(flashcard, e)}
+                    className="h-7 px-2 text-xs"
+                  >
+                    ✏️ Edytuj
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => handleDeleteFlashcard(flashcard, e)}
+                    className="h-7 px-2 text-xs bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300"
+                  >
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Usuń
+                  </Button>
                 </div>
               </div>
 
@@ -443,6 +676,113 @@ export const FlashcardsPageClient: React.FC = () => {
 
       {/* Modal ze szczegółami fiszki */}
       <FlashcardDetailsModal isOpen={modalState.isOpen} onClose={closeModal} flashcardId={modalState.flashcardId} />
+
+      {/* Modal edycji fiszki */}
+      <Dialog open={editModalState.isOpen} onOpenChange={closeEditModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edytuj fiszkę #{editModalState.flashcard?.id}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Błąd */}
+            {editModalState.error && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-700 text-sm">
+                {editModalState.error}
+              </div>
+            )}
+
+            {/* Przód fiszki */}
+            <div>
+              <label htmlFor="edit-front" className="block text-sm font-medium text-gray-700 mb-1">
+                Przód fiszki
+              </label>
+              <Textarea
+                id="edit-front"
+                value={editForm.front}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, front: e.target.value }))}
+                placeholder="Tekst na przedzie fiszki..."
+                rows={4}
+                className="w-full"
+              />
+            </div>
+
+            {/* Tył fiszki */}
+            <div>
+              <label htmlFor="edit-back" className="block text-sm font-medium text-gray-700 mb-1">
+                Tył fiszki
+              </label>
+              <Textarea
+                id="edit-back"
+                value={editForm.back}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, back: e.target.value }))}
+                placeholder="Tekst na tylnej stronie fiszki..."
+                rows={4}
+                className="w-full"
+              />
+            </div>
+
+            {/* Przyciski */}
+            <div className="flex gap-3 pt-4">
+              <Button onClick={closeEditModal} variant="outline" className="flex-1">
+                Anuluj
+              </Button>
+              <Button onClick={handleSaveEdit} disabled={editModalState.loading} className="flex-1">
+                {editModalState.loading ? "Zapisywanie..." : "Zapisz zmiany"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal potwierdzenia usunięcia */}
+      <Dialog open={deleteModalState.isOpen} onOpenChange={closeDeleteModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Potwierdź usunięcie</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="text-sm text-gray-700">
+              <p className="mb-3">Czy na pewno chcesz usunąć tę fiszkę?</p>
+
+              {/* {deleteModalState.flashcard && (
+                <div className="bg-gray-50 p-3 rounded-md text-center">
+                  <div className="text-sm text-gray-600">
+                    <strong>Fiszka ID:</strong> {deleteModalState.flashcard.id}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{getSourceLabel(deleteModalState.flashcard.source)}</div>
+                </div>
+              )} */}
+
+              <p className="mt-3 text-red-600 font-medium text-center">⚠️ Tej operacji nie można cofnąć!</p>
+            </div>
+
+            {/* Przyciski */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={closeDeleteModal}
+                variant="outline"
+                className="flex-1"
+                disabled={deleteModalState.loading}
+              >
+                Anuluj
+              </Button>
+              <Button
+                onClick={confirmDeleteFlashcard}
+                variant="destructive"
+                className="flex-1"
+                disabled={deleteModalState.loading}
+              >
+                {deleteModalState.loading ? "Usuwanie..." : "Usuń fiszkę"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Toast Notifications */}
+      <ToastNotifications toasts={toastState.toasts} onRemoveToast={removeToast} />
     </div>
   );
 };

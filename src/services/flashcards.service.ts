@@ -4,6 +4,7 @@ import type {
   FlashcardSource,
   FlashcardListResponseDTO,
   FlashcardDTO,
+  UpdateFlashcardDTO,
 } from "../types";
 import { supabaseClient, DEFAULT_USER_ID } from "../db/supabase.client";
 
@@ -181,6 +182,90 @@ export class FlashcardsService {
       };
     } catch (error) {
       console.error("Błąd podczas pobierania fiszki po ID:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Aktualizuje fiszkę
+   * @param id ID fiszki do aktualizacji
+   * @param updateData Dane do aktualizacji
+   * @returns Zaktualizowana fiszka
+   */
+  public async updateFlashcard(id: number, updateData: UpdateFlashcardDTO): Promise<FlashcardDTO> {
+    try {
+      // Walidacja ID
+      if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("ID fiszki musi być liczbą całkowitą większą od 0");
+      }
+
+      // Walidacja danych
+      if (!updateData.front?.trim() && !updateData.back?.trim()) {
+        throw new Error("Przynajmniej jedno pole (front lub back) musi być wypełnione");
+      }
+
+      // Przygotowanie danych do aktualizacji
+      const dataToUpdate: Partial<typeof updateData> = {};
+      if (updateData.front !== undefined) dataToUpdate.front = updateData.front.trim();
+      if (updateData.back !== undefined) dataToUpdate.back = updateData.back.trim();
+
+      // Aktualizacja w bazie danych
+      const { data: updatedFlashcard, error } = await supabaseClient
+        .from("flashcards")
+        .update(dataToUpdate)
+        .eq("id", id)
+        .eq("user_id", DEFAULT_USER_ID)
+        .select("id, front, back, source, generation_id, created_at, updated_at")
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          throw new Error("Fiszka nie została znaleziona lub nie masz uprawnień do jej edycji");
+        }
+        throw new Error(`Błąd podczas aktualizacji fiszki: ${error.message}`);
+      }
+
+      if (!updatedFlashcard) {
+        throw new Error("Nie udało się zaktualizować fiszki");
+      }
+
+      return {
+        id: updatedFlashcard.id,
+        front: updatedFlashcard.front,
+        back: updatedFlashcard.back,
+        source: updatedFlashcard.source as FlashcardSource,
+        generation_id: updatedFlashcard.generation_id,
+        created_at: updatedFlashcard.created_at,
+        updated_at: updatedFlashcard.updated_at,
+      };
+    } catch (error) {
+      console.error("Błąd podczas aktualizacji fiszki:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Usuwa fiszkę
+   * @param id ID fiszki do usunięcia
+   * @returns true jeśli usunięto pomyślnie
+   */
+  public async deleteFlashcard(id: number): Promise<boolean> {
+    try {
+      // Walidacja ID
+      if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("ID fiszki musi być liczbą całkowitą większą od 0");
+      }
+
+      // Usunięcie z bazy danych
+      const { error } = await supabaseClient.from("flashcards").delete().eq("id", id).eq("user_id", DEFAULT_USER_ID);
+
+      if (error) {
+        throw new Error(`Błąd podczas usuwania fiszki: ${error.message}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Błąd podczas usuwania fiszki:", error);
       throw error;
     }
   }

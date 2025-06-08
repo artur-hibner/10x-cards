@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { AuthStatus } from "../components/auth/AuthStatus";
+import logoImg from "../assets/10xcards-logo.png";
 
 interface Props {
   title?: string;
@@ -8,6 +9,7 @@ interface Props {
 
 const { title = "10x Astro Starter" } = Astro.props;
 const user = Astro.locals.user;
+const { src: logoSrc } = logoImg;
 ---
 
 <!doctype html>
@@ -25,7 +27,7 @@ const user = Astro.locals.user;
     >
       <div class="flex items-center">
         <a href="/" class="flex items-center gap-2">
-          <img src="/10xcards-logo.png" alt="10x Cards Logo" class="h-8" />
+          <img src={logoSrc} alt="10x Cards Logo" class="h-8" />
         </a>
       </div>
 

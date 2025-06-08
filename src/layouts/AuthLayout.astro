@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import logoImg from "../assets/10xcards-logo.png";
 
 interface Props {
   title?: string;
@@ -7,6 +8,7 @@ interface Props {
 }
 
 const { title = "10x Cards - Autoryzacja", wideContent = false } = Astro.props;
+const { src: logoSrc } = logoImg;
 ---
 
 <!doctype html>
@@ -22,7 +24,7 @@ const { title = "10x Cards - Autoryzacja", wideContent = false } = Astro.props;
     <div class="min-h-screen bg-brand-purple flex flex-col items-center justify-center p-4">
       <div class={`w-full ${wideContent ? "max-w-4xl" : "max-w-md"}`}>
         <div class="flex justify-center mb-8">
-          <img src="/10xcards-logo.png" alt="10x Cards Logo" class="h-30" />
+          <img src={logoSrc} alt="10x Cards Logo" class="h-30" />
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 md:p-8">
           <slot />

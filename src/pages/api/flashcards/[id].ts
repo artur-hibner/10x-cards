@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
 import { FlashcardsService } from "../../../services/flashcards.service";
+import type { UpdateFlashcardDTO } from "../../../types";
 
 export const prerender = false;
 
@@ -16,6 +17,17 @@ const idParamSchema = z.string().transform((val, ctx) => {
   }
   return parsed;
 });
+
+// Schemat walidacji dla aktualizacji fiszki
+const updateFlashcardSchema = z
+  .object({
+    front: z.string().min(1, "Tekst na przodzie fiszki nie może być pusty").optional(),
+    back: z.string().min(1, "Tekst na tyle fiszki nie może być pusty").optional(),
+  })
+  .refine(
+    (data) => data.front !== undefined || data.back !== undefined,
+    "Przynajmniej jedno pole (front lub back) musi być wypełnione"
+  );
 
 export const GET: APIRoute = async ({ params }) => {
   console.log("Otrzymano żądanie GET /api/flashcards/[id]");
@@ -68,6 +80,162 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response(
       JSON.stringify({
         error: "Błąd serwera podczas pobierania fiszki",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
+
+export const PUT: APIRoute = async ({ params, request }) => {
+  console.log("Otrzymano żądanie PUT /api/flashcards/[id]");
+  console.log("Params:", params);
+
+  try {
+    // Walidacja parametru ID
+    const validationResult = idParamSchema.safeParse(params.id);
+    if (!validationResult.success) {
+      console.log("Błąd walidacji ID:", validationResult.error.errors);
+      return new Response(
+        JSON.stringify({
+          error: "Nieprawidłowy identyfikator fiszki",
+          details: validationResult.error.errors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const flashcardId = validationResult.data;
+
+    // Parsowanie JSON z body
+    let requestBody;
+    try {
+      requestBody = await request.json();
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          error: "Nieprawidłowy format JSON",
+          details: "Nie udało się parsować danych z żądania",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Walidacja danych do aktualizacji
+    const updateValidation = updateFlashcardSchema.safeParse(requestBody);
+    if (!updateValidation.success) {
+      console.log("Błąd walidacji danych:", updateValidation.error.errors);
+      return new Response(
+        JSON.stringify({
+          error: "Nieprawidłowe dane aktualizacji",
+          details: updateValidation.error.errors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const updateData: UpdateFlashcardDTO = updateValidation.data;
+
+    // Aktualizacja fiszki
+    const flashcardsService = new FlashcardsService();
+    const updatedFlashcard = await flashcardsService.updateFlashcard(flashcardId, updateData);
+
+    // Zwrócenie zaktualizowanej fiszki
+    return new Response(JSON.stringify(updatedFlashcard), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Błąd podczas aktualizacji fiszki:", error);
+
+    // Sprawdzenie czy to błąd "nie znaleziono"
+    if (error instanceof Error && error.message.includes("nie została znaleziona")) {
+      return new Response(
+        JSON.stringify({
+          error: "Fiszka nie została znaleziona",
+          details: error.message,
+        }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        error: "Błąd serwera podczas aktualizacji fiszki",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
+
+export const DELETE: APIRoute = async ({ params }) => {
+  console.log("Otrzymano żądanie DELETE /api/flashcards/[id]");
+  console.log("Params:", params);
+
+  try {
+    // Walidacja parametru ID
+    const validationResult = idParamSchema.safeParse(params.id);
+    if (!validationResult.success) {
+      console.log("Błąd walidacji ID:", validationResult.error.errors);
+      return new Response(
+        JSON.stringify({
+          error: "Nieprawidłowy identyfikator fiszki",
+          details: validationResult.error.errors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const flashcardId = validationResult.data;
+
+    // Usunięcie fiszki
+    const flashcardsService = new FlashcardsService();
+    const success = await flashcardsService.deleteFlashcard(flashcardId);
+
+    if (success) {
+      return new Response(JSON.stringify({ message: "Fiszka została pomyślnie usunięta" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } else {
+      return new Response(
+        JSON.stringify({
+          error: "Nie udało się usunąć fiszki",
+          details: "Fiszka może nie istnieć lub nie masz uprawnień do jej usunięcia",
+        }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  } catch (error) {
+    console.error("Błąd podczas usuwania fiszki:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Błąd serwera podczas usuwania fiszki",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
       {
