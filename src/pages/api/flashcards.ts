@@ -20,6 +20,30 @@ const createFlashcardsSchema = z.object({
   flashcards: z.array(flashcardSchema).min(1, "Musisz podać co najmniej jedną fiszkę"),
 });
 
+// Schemat walidacji dla parametrów GET
+const getFlashcardsQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val) : 1)),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val) : 10)),
+  sort: z.enum(["created_at", "updated_at", "front", "back"]).optional().default("created_at"),
+  order: z.enum(["asc", "desc"]).optional().default("desc"),
+  source: z.enum(["ai-full", "ai-edited", "manual"]).optional(),
+  generation_id: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === undefined) return undefined;
+      if (val === "null") return null;
+      const parsed = parseInt(val);
+      return isNaN(parsed) ? undefined : parsed;
+    }),
+});
+
 // Walidacja zależności między generation_id a source
 const validateSourceAndGenerationId = (flashcard: z.infer<typeof flashcardSchema>) => {
   if ((flashcard.source === "ai-full" || flashcard.source === "ai-edited") && flashcard.generation_id === null) {
@@ -105,6 +129,55 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(
       JSON.stringify({
         error: "Błąd serwera podczas przetwarzania żądania",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
+
+export const GET: APIRoute = async ({ request }) => {
+  console.log("Otrzymano żądanie GET /api/flashcards");
+
+  try {
+    // Parsowanie parametrów query
+    const url = new URL(request.url);
+    const queryParams = Object.fromEntries(url.searchParams.entries());
+    console.log("Query params:", queryParams);
+
+    // Walidacja parametrów query
+    const validationResult = getFlashcardsQuerySchema.safeParse(queryParams);
+    if (!validationResult.success) {
+      console.log("Błąd walidacji parametrów:", validationResult.error.errors);
+      return new Response(
+        JSON.stringify({
+          error: "Nieprawidłowe parametry zapytania",
+          details: validationResult.error.errors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Pobranie fiszek z serwisu
+    const flashcardsService = new FlashcardsService();
+    const result = await flashcardsService.getFlashcards(validationResult.data);
+
+    // Zwrócenie odpowiedzi
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Błąd podczas pobierania fiszek:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Błąd serwera podczas pobierania fiszek",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
       {

@@ -28,6 +28,26 @@ const user = Astro.locals.user;
           <img src="/10xcards-logo.png" alt="10x Cards Logo" class="h-8" />
         </a>
       </div>
+
+      {
+        user && (
+          <nav class="hidden md:flex items-center space-x-6 flex-1 justify-center">
+            <a
+              href="/generate"
+              class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Generuj Fiszki
+            </a>
+            <a
+              href="/flashcards"
+              class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Moje Fiszki
+            </a>
+          </nav>
+        )
+      }
+
       <div>
         <AuthStatus client:load isLoggedIn={!!user} userEmail={user?.email} />
       </div>
