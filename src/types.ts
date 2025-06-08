@@ -75,7 +75,7 @@ export type GenerationDTO = Pick<
 };
 
 export interface GenerationListResponseDTO {
-  generations: Omit<GenerationDTO, "proposed_flashcards">[];
+  generations: Omit<GenerationDTO, "flashcards_proposals">[];
   total: number;
   page: number;
   per_page: number;

@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import GenerationsListView from "../components/GenerationsListView";
+---
+
+<Layout title="Lista generacji - 10x Cards">
+  <main class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold mb-2">Historia generacji</h1>
+      <p class="text-gray-600">
+        Przejrzyj wszystkie wcześniejsze generacje fiszek. Kliknij na generację, aby zobaczyć szczegóły i zaakceptować propozycje.
+      </p>
+    </div>
+    <GenerationsListView client:load />
+  </main>
+</Layout> 

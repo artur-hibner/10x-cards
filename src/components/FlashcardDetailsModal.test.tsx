@@ -36,4 +36,4 @@ describe("FlashcardDetailsModal", () => {
     // Po zamknięciu modala, nie powinno być loading state
     expect(screen.queryByText("Pobieranie szczegółów...")).not.toBeInTheDocument();
   });
-}); 
+});

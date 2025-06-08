@@ -1,23 +1,11 @@
 import React, { useState, useCallback } from "react";
 import { Button } from "./ui/button";
-import type { CreateGenerationRequestDTO, CreateGenerationResponseDTO, CreateFlashcardDTO } from "../types";
+import type { CreateGenerationRequestDTO, CreateGenerationResponseDTO } from "../types";
 import TextInputArea from "./TextInputArea";
-import FlashcardList from "./FlashcardList";
-import BulkSaveButton from "./BulkSaveButton";
 import ToastNotifications from "./ToastNotifications";
 import type { ToastMessage, ToastType } from "./ToastNotifications";
 
-// Model lokalny dla propozycji fiszek z dodatkowymi polami do UI
-interface FlashcardProposalViewModel {
-  id: string;
-  front: string;
-  back: string;
-  source: "ai-full" | "ai-edited" | "manual";
-  accepted: boolean;
-  edited: boolean;
-}
-
-// Główny komponent widoku generowania fiszek
+// Główny komponent widoku generowania fiszek  
 const FlashcardGenerationView = () => {
   // Stan dla tekstu źródłowego
   const [sourceText, setSourceText] = useState<string>("");
@@ -25,13 +13,6 @@ const FlashcardGenerationView = () => {
 
   // Stan dla procesu generowania
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-
-  // Stan dla propozycji fiszek
-  const [proposals, setProposals] = useState<FlashcardProposalViewModel[]>([]);
-
-  // Stan dla ID generacji
-  const [generationId, setGenerationId] = useState<number | null>(null);
 
   // Stan dla powiadomień
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -66,7 +47,7 @@ const FlashcardGenerationView = () => {
     return true;
   };
 
-  // Obsługa generowania fiszek
+  // Obsługa generowania fiszek - nowy workflow
   const handleGenerate = async () => {
     if (!validateSourceText()) return;
 
@@ -86,19 +67,13 @@ const FlashcardGenerationView = () => {
 
       const data = (await response.json()) as CreateGenerationResponseDTO;
 
-      // Zapisz ID generacji
-      setGenerationId(data.generation_id);
+      addToast(`Wygenerowano ${data.flashcards_proposals.length} propozycji fiszek`, "success");
+      
+      // Przekierowanie do strony przeglądu generacji
+      setTimeout(() => {
+        window.location.href = `/generations/${data.generation_id}`;
+      }, 1500);
 
-      // Przekształcanie odpowiedzi API na model propozycji dla UI
-      const viewModels: FlashcardProposalViewModel[] = data.flashcards_proposals.map((proposal) => ({
-        ...proposal,
-        source: "ai-full",
-        accepted: false, // Domyślnie wszystkie są nieakceptowane
-        edited: false,
-      }));
-
-      setProposals(viewModels);
-      addToast(`Wygenerowano ${data.flashcards_proposals.length} propozycji fiszek`, "info");
     } catch (error) {
       console.error("Błąd podczas generowania fiszek:", error);
       setTextError("Wystąpił błąd podczas generowania fiszek. Spróbuj ponownie.");
@@ -108,127 +83,38 @@ const FlashcardGenerationView = () => {
     }
   };
 
-  // Aktualizacja propozycji fiszki
-  const handleUpdateProposal = (id: string, updates: Partial<FlashcardProposalViewModel>) => {
-    setProposals((prevProposals) =>
-      prevProposals.map((proposal) => (proposal.id === id ? { ...proposal, ...updates } : proposal))
-    );
-  };
-
-  // Usunięcie propozycji fiszki
-  const handleRemoveProposal = (id: string) => {
-    setProposals((prevProposals) => prevProposals.filter((proposal) => proposal.id !== id));
-    addToast("Fiszka została odrzucona", "info", 3000);
-  };
-
-  // Przygotowanie fiszek do zapisu (wszystkie)
-  const prepareAllFlashcards = (): CreateFlashcardDTO[] => {
-    return proposals.map((proposal) => ({
-      front: proposal.front,
-      back: proposal.back,
-      source: proposal.source,
-      generation_id: generationId,
-    }));
-  };
-
-  // Przygotowanie zaakceptowanych fiszek do zapisu
-  const prepareAcceptedFlashcards = (): CreateFlashcardDTO[] => {
-    return proposals
-      .filter((proposal) => proposal.accepted)
-      .map((proposal) => ({
-        front: proposal.front,
-        back: proposal.back,
-        source: proposal.source,
-        generation_id: generationId,
-      }));
-  };
-
-  // Zapisywanie fiszek do bazy danych
-  const saveFlashcards = async (flashcards: CreateFlashcardDTO[]) => {
-    if (!flashcards.length) {
-      addToast("Brak fiszek do zapisania.", "error");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const response = await fetch("/api/flashcards", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ flashcards }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Błąd podczas zapisywania fiszek: ${response.status}`);
-      }
-
-      const result = await response.json();
-      addToast(`Zapisano ${result.flashcards.length} fiszek pomyślnie`, "success");
-
-      // Opcjonalnie: resetowanie formularza lub przekierowanie
-      // setSourceText("");
-      // setProposals([]);
-      // setGenerationId(null);
-    } catch (error) {
-      console.error("Błąd podczas zapisywania fiszek:", error);
-      addToast("Nie udało się zapisać fiszek. Spróbuj ponownie.", "error");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Obsługa zapisu wszystkich fiszek
-  const handleSaveAll = async () => {
-    const flashcards = prepareAllFlashcards();
-    await saveFlashcards(flashcards);
-  };
-
-  // Obsługa zapisu zaakceptowanych fiszek
-  const handleSaveAccepted = async () => {
-    const flashcards = prepareAcceptedFlashcards();
-    await saveFlashcards(flashcards);
-  };
-
-  // Obliczenie liczby zaakceptowanych propozycji
-  const acceptedCount = proposals.filter((p) => p.accepted).length;
-
   return (
     <div className="space-y-8">
-      <TextInputArea value={sourceText} onChange={setSourceText} onBlur={validateSourceText} errorMessage={textError} />
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-2">Nowy workflow generacji fiszek</h2>
+        <p className="text-gray-600">
+          Wprowadź tekst, z którego chcesz wygenerować fiszki. Po generacji zostaniesz przekierowany do strony 
+          przeglądu, gdzie będziesz mógł wybrać i zaakceptować konkretne propozycje.
+        </p>
+      </div>
 
-      <div className="flex justify-end">
-        <Button onClick={handleGenerate} disabled={isLoading || sourceText.length < 1000}>
+      <TextInputArea 
+        value={sourceText} 
+        onChange={setSourceText} 
+        onBlur={validateSourceText} 
+        errorMessage={textError} 
+      />
+
+      <div className="flex justify-center">
+        <Button 
+          onClick={handleGenerate} 
+          disabled={isLoading || sourceText.length < 1000}
+          size="lg"
+          className="min-w-48"
+        >
           {isLoading ? "Generowanie..." : "Generuj fiszki"}
         </Button>
       </div>
 
       {isLoading && (
-        <div className="flex justify-center py-10">
-          <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full" />
-        </div>
-      )}
-
-      {/* Lista wygenerowanych propozycji fiszek */}
-      {proposals.length > 0 && (
-        <div className="border rounded-md p-4">
-          <FlashcardList
-            proposals={proposals}
-            onUpdateProposal={handleUpdateProposal}
-            onRemoveProposal={handleRemoveProposal}
-          />
-
-          <div className="mt-6">
-            <BulkSaveButton
-              onSaveAll={handleSaveAll}
-              onSaveAccepted={handleSaveAccepted}
-              totalCount={proposals.length}
-              acceptedCount={acceptedCount}
-              disabled={!generationId}
-              isLoading={isSaving}
-            />
-          </div>
+        <div className="flex flex-col items-center py-10">
+          <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-4" />
+          <p className="text-gray-600">Generowanie propozycji fiszek przy użyciu AI...</p>
         </div>
       )}
 
