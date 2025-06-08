@@ -1,8 +1,7 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
 import type { AcceptFlashcardsRequestDTO, AcceptFlashcardsResponseDTO } from "../../../../types";
-import { supabaseClient } from "../../../../db/supabase.client";
-import { DEFAULT_USER_ID } from "../../../../db/supabase.client";
+import { supabaseClient, DEFAULT_USER_ID } from "../../../../db/supabase.client";
 
 export const prerender = false;
 
@@ -163,4 +162,4 @@ export const POST: APIRoute = async ({ params, request }) => {
       }
     );
   }
-}; 
+};

@@ -3,6 +3,7 @@ import { supabaseClient, DEFAULT_USER_ID } from "../db/supabase.client";
 import crypto from "crypto";
 import { OpenRouterService } from "../lib/openrouter.service";
 import type { FlashcardsResponseSchema } from "../lib/openrouter.types";
+import { getModelById, getDefaultModel, type AIModel } from "../config/ai-models";
 
 // Interfejs odpowiedzi z modelu
 interface FlashcardResponse {
@@ -58,7 +59,10 @@ export class GenerationService {
     );
   }
 
-  public async createGeneration(sourceText: string): Promise<CreateGenerationResponseDTO> {
+  public async createGeneration(sourceText: string, modelId?: string): Promise<CreateGenerationResponseDTO> {
+    // Wybranie modelu AI na podstawie modelId lub użycie domyślnego
+    const selectedModel: AIModel = modelId ? getModelById(modelId) || getDefaultModel() : getDefaultModel();
+
     try {
       // Obliczenie hash'a tekstu źródłowego (MD5)
       const sourceTextHash = this.calculateHash(sourceText);
@@ -66,8 +70,8 @@ export class GenerationService {
       // Czas rozpoczęcia generacji
       const startTime = Date.now();
 
-      // Generowanie propozycji fiszek
-      const proposals = await this.generateFlashcards(sourceText);
+      // Generowanie propozycji fiszek z wybranym modelem
+      const proposals = await this.generateFlashcards(sourceText, selectedModel);
 
       // Czas zakończenia generacji
       const generationDuration = Date.now() - startTime;
@@ -80,7 +84,7 @@ export class GenerationService {
           source_text_hash: sourceTextHash,
           source_text_length: sourceText.length,
           status: "completed",
-          model: this.MODEL_NAME,
+          model: selectedModel.modelPath,
           source_text: sourceText,
           generated_count: proposals.length,
           generation_duration: generationDuration,
@@ -103,7 +107,7 @@ export class GenerationService {
       };
     } catch (error) {
       // Logowanie błędu
-      await this.logGenerationError(error as Error);
+      await this.logGenerationError(error as Error, undefined, selectedModel.modelPath);
       throw error;
     }
   }
@@ -112,15 +116,42 @@ export class GenerationService {
     return crypto.createHash("md5").update(text).digest("hex");
   }
 
-  private async generateFlashcards(sourceText: string): Promise<FlashcardProposalDTO[]> {
+  private async generateFlashcards(sourceText: string, selectedModel: AIModel): Promise<FlashcardProposalDTO[]> {
     try {
-      // Ustawienie niższej temperatury dla bardziej deterministycznych odpowiedzi
-      this.openRouterService.updateConfiguration({
-        modelParameters: {
-          temperature: 0.3, // Zmniejszona temperatura dla bardziej przewidywalnych odpowiedzi
+      // Utworzenie dedykowanego serwisu OpenRouter dla wybranego modelu
+      const modelService = new OpenRouterService(
+        this.openRouterApiKey,
+        selectedModel.modelPath,
+        {
+          temperature: 0.3,
           max_tokens: 2000,
         },
-      });
+        "Jesteś ekspertem w tworzeniu materiałów edukacyjnych. Twoim zadaniem jest tworzenie wysokiej jakości fiszek w języku polskim na podstawie podanego tekstu.",
+        "",
+        {
+          type: "json_schema",
+          json_schema: {
+            name: "FlashcardsResponse",
+            strict: true,
+            schema: {
+              flashcards: "array",
+            },
+            properties: {
+              flashcards: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    front: { type: "string" },
+                    back: { type: "string" },
+                  },
+                  required: ["front", "back"],
+                },
+              },
+            },
+          } as FlashcardsResponseSchema,
+        }
+      );
 
       // Korzystamy z systemu walidacji JSON w OpenRouter zamiast opisywać format w promptcie
       const prompt = `
@@ -154,7 +185,7 @@ WAŻNE: Odpowiedź MUSI być w formacie JSON zgodnym z poniższym schematem:
       console.log("Wysyłanie zapytania do OpenRouter API");
 
       // Wywołanie OpenRouter API - schemat JSON jest już przekazany w konstruktorze
-      const response = await this.openRouterService.sendChatRequest(prompt);
+      const response = await modelService.sendChatRequest(prompt);
 
       // Dodatkowe logowanie odpowiedzi dla celów diagnostycznych
       console.log("Otrzymana odpowiedź z OpenRouter API:", JSON.stringify(response, null, 2));
@@ -322,13 +353,13 @@ WAŻNE: Odpowiedź MUSI być w formacie JSON zgodnym z poniższym schematem:
     }));
   }
 
-  private async logGenerationError(error: Error, generationId?: number): Promise<void> {
+  private async logGenerationError(error: Error, generationId?: number, modelPath?: string): Promise<void> {
     try {
       await supabaseClient.from("generation_error_logs").insert({
         generation_id: generationId ?? 0,
         error_code: error.name || "UnknownError",
         error_message: error.message,
-        model: this.MODEL_NAME,
+        model: modelPath || this.MODEL_NAME,
         source_text_hash: "",
         source_text_length: 0,
         user_id: DEFAULT_USER_ID,

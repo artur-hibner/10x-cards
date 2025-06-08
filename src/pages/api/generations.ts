@@ -11,6 +11,7 @@ const createGenerationSchema = z.object({
     .string()
     .min(1000, "Tekst źródłowy musi zawierać minimum 1000 znaków")
     .max(10000, "Tekst źródłowy nie może przekraczać 10000 znaków"),
+  model_id: z.string().optional(),
 });
 
 // Schemat walidacji dla parametrów paginacji
@@ -122,7 +123,10 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Inicjalizacja serwisu i przetwarzanie żądania
     const generationService = new GenerationService();
-    const result = await generationService.createGeneration(validationResult.data.source_text);
+    const result = await generationService.createGeneration(
+      validationResult.data.source_text,
+      validationResult.data.model_id
+    );
 
     return new Response(JSON.stringify(result), {
       status: 202,

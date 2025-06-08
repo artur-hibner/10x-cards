@@ -68,6 +68,7 @@ export type GenerationDTO = Pick<
   | "generation_duration"
   | "created_at"
   | "updated_at"
+  | "source_text"
 > & {
   generation_id: number;
   status: GenerationStatus;
@@ -83,6 +84,7 @@ export interface GenerationListResponseDTO {
 
 export interface CreateGenerationRequestDTO {
   source_text: string;
+  model_id?: string; // ID agenta AI z konfiguracji
 }
 
 export interface CreateGenerationResponseDTO {

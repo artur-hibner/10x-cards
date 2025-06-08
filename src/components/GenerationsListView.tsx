@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import type { GenerationListResponseDTO, GenerationDTO } from "../types";
 import ToastNotifications from "./ToastNotifications";
 import type { ToastMessage, ToastType } from "./ToastNotifications";
@@ -24,6 +25,17 @@ const GenerationsListView = () => {
   // Stan dla powiadomień
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  // Stan dla modala usuwania
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    generation: GenerationListItem | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    generation: null,
+    loading: false,
+  });
+
   // Funkcje dla powiadomień
   const generateId = () => Math.random().toString(36).substring(2, 15);
 
@@ -43,18 +55,17 @@ const GenerationsListView = () => {
 
     try {
       const response = await fetch(`/api/generations?page=${page}&limit=${perPage}`);
-      
+
       if (!response.ok) {
         throw new Error(`Błąd pobierania generacji: ${response.status}`);
       }
 
       const data: GenerationListResponseDTO = await response.json();
-      
+
       setGenerations(data.generations);
       setCurrentPage(data.page);
       setTotalItems(data.total);
       setTotalPages(Math.ceil(data.total / data.per_page));
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
       setError(errorMessage);
@@ -99,6 +110,58 @@ const GenerationsListView = () => {
     window.location.href = `/generations/${generationId}`;
   };
 
+  // Otwieranie modala usuwania
+  const handleDeleteGeneration = (generation: GenerationListItem, event: React.MouseEvent) => {
+    event.stopPropagation(); // Zatrzymanie propagacji aby nie kliknąć w kartę
+    setDeleteModalState({
+      isOpen: true,
+      generation,
+      loading: false,
+    });
+  };
+
+  // Potwierdzenie usunięcia generacji
+  const confirmDeleteGeneration = async () => {
+    if (!deleteModalState.generation) return;
+
+    setDeleteModalState((prev) => ({ ...prev, loading: true }));
+
+    try {
+      const response = await fetch(`/api/generations/${deleteModalState.generation.generation_id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Błąd usuwania generacji: ${response.status}`);
+      }
+
+      // Zamknij modal i odśwież listę
+      setDeleteModalState({
+        isOpen: false,
+        generation: null,
+        loading: false,
+      });
+
+      addToast("Generacja została pomyślnie usunięta", "success");
+
+      // Odświeżenie listy
+      fetchGenerations(currentPage);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
+      addToast(`Nie udało się usunąć generacji: ${errorMessage}`, "error");
+      setDeleteModalState((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  // Zamknięcie modala usuwania
+  const closeDeleteModal = () => {
+    setDeleteModalState({
+      isOpen: false,
+      generation: null,
+      loading: false,
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-10">
@@ -126,11 +189,7 @@ const GenerationsListView = () => {
           Znaleziono {totalItems} {totalItems === 1 ? "generację" : totalItems < 5 ? "generacje" : "generacji"}
         </p>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => window.location.href = "/generate"}
-          >
+          <Button variant="outline" size="sm" onClick={() => (window.location.href = "/generate")}>
             Nowa generacja
           </Button>
         </div>
@@ -140,29 +199,29 @@ const GenerationsListView = () => {
       {generations.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-gray-600 mb-4">Nie masz jeszcze żadnych generacji</p>
-          <Button onClick={() => window.location.href = "/generate"}>
-            Wygeneruj pierwsze fiszki
-          </Button>
+          <Button onClick={() => (window.location.href = "/generate")}>Wygeneruj pierwsze fiszki</Button>
         </div>
       ) : (
         <div className="grid gap-4">
           {generations.map((generation) => (
-            <Card
-              key={generation.generation_id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => navigateToGeneration(generation.generation_id)}
-            >
+            <Card key={generation.generation_id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">
-                    Generacja #{generation.generation_id}
-                  </CardTitle>
-                  <Badge 
-                    variant={generation.status === "completed" ? "default" : 
-                             generation.status === "processing" ? "secondary" : "destructive"}
+                  <CardTitle className="text-lg">Generacja #{generation.generation_id}</CardTitle>
+                  <Badge
+                    variant={
+                      generation.status === "completed"
+                        ? "default"
+                        : generation.status === "processing"
+                          ? "secondary"
+                          : "destructive"
+                    }
                   >
-                    {generation.status === "completed" ? "Ukończona" :
-                     generation.status === "processing" ? "W toku" : "Błąd"}
+                    {generation.status === "completed"
+                      ? "Ukończona"
+                      : generation.status === "processing"
+                        ? "W toku"
+                        : "Błąd"}
                   </Badge>
                 </div>
               </CardHeader>
@@ -191,7 +250,7 @@ const GenerationsListView = () => {
                 </div>
 
                 {/* Statystyki akceptacji */}
-                {(generation.accepted_unedited_count || generation.accepted_edited_count) ? (
+                {generation.accepted_unedited_count || generation.accepted_edited_count ? (
                   <div className="flex gap-2">
                     {generation.accepted_unedited_count ? (
                       <Badge variant="outline" className="text-xs">
@@ -210,6 +269,16 @@ const GenerationsListView = () => {
                 <div className="flex justify-between items-center text-xs text-gray-500">
                   <span>Tekst źródłowy: {generation.source_text_length} znaków</span>
                   <span>Utworzono: {formatDate(generation.created_at)}</span>
+                </div>
+
+                {/* Przyciski akcji */}
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" size="sm" onClick={() => navigateToGeneration(generation.generation_id)}>
+                    Zobacz
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={(e) => handleDeleteGeneration(generation, e)}>
+                    Usuń
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -232,12 +301,11 @@ const GenerationsListView = () => {
           <div className="flex items-center gap-2">
             {/* Wyświetlanie numerów stron */}
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = currentPage <= 3 ? i + 1 : 
-                            currentPage >= totalPages - 2 ? totalPages - 4 + i :
-                            currentPage - 2 + i;
-              
+              const pageNum =
+                currentPage <= 3 ? i + 1 : currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i;
+
               if (pageNum < 1 || pageNum > totalPages) return null;
-              
+
               return (
                 <Button
                   key={pageNum}
@@ -262,10 +330,62 @@ const GenerationsListView = () => {
         </div>
       )}
 
+      {/* Modal potwierdzenia usunięcia */}
+      <Dialog open={deleteModalState.isOpen} onOpenChange={closeDeleteModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Potwierdź usunięcie</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="text-sm text-gray-700">
+              <p className="mb-3">Czy na pewno chcesz usunąć tę generację?</p>
+
+              {deleteModalState.generation && (
+                <div className="bg-gray-50 p-3 rounded-md text-center">
+                  <div className="text-sm text-gray-600">
+                    <strong>Generacja ID:</strong> {deleteModalState.generation.generation_id}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {deleteModalState.generation.generated_count} fiszek,{" "}
+                    {deleteModalState.generation.source_text_length} znaków
+                  </div>
+                </div>
+              )}
+
+              <p className="mt-3 text-red-600 font-medium text-center">⚠️ Tej operacji nie można cofnąć!</p>
+              <p className="text-xs text-red-500 text-center mt-1">
+                Zostaną usunięte również wszystkie powiązane fiszki.
+              </p>
+            </div>
+
+            {/* Przyciski */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={closeDeleteModal}
+                variant="outline"
+                className="flex-1"
+                disabled={deleteModalState.loading}
+              >
+                Anuluj
+              </Button>
+              <Button
+                onClick={confirmDeleteGeneration}
+                variant="destructive"
+                className="flex-1"
+                disabled={deleteModalState.loading}
+              >
+                {deleteModalState.loading ? "Usuwanie..." : "Usuń generację"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* System powiadomień */}
       <ToastNotifications toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };
 
-export default GenerationsListView; 
+export default GenerationsListView;

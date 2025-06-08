@@ -5,6 +5,7 @@ import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import type { GenerationDTO, AcceptFlashcardsRequestDTO, AcceptFlashcardsResponseDTO, EditStatus } from "../types";
 import ToastNotifications from "./ToastNotifications";
 import type { ToastMessage, ToastType } from "./ToastNotifications";
@@ -56,7 +57,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
 
     try {
       const response = await fetch(`/api/generations/${generationId}`);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error("Generacja nie została znaleziona");
@@ -68,7 +69,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
       setGeneration(data);
 
       // Przekształcanie propozycji na model widoku
-      const proposalViewModels: FlashcardProposalViewModel[] = data.flashcards_proposals.map(proposal => ({
+      const proposalViewModels: FlashcardProposalViewModel[] = data.flashcards_proposals.map((proposal) => ({
         id: proposal.id,
         front: proposal.front,
         back: proposal.back,
@@ -79,7 +80,6 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
       }));
 
       setProposals(proposalViewModels);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
       setError(errorMessage);
@@ -96,22 +96,18 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
 
   // Obsługa zmiany zaznaczenia propozycji
   const handleProposalSelect = (proposalId: string, selected: boolean) => {
-    setProposals(prev => 
-      prev.map(proposal => 
-        proposal.id === proposalId ? { ...proposal, selected } : proposal
-      )
-    );
+    setProposals((prev) => prev.map((proposal) => (proposal.id === proposalId ? { ...proposal, selected } : proposal)));
   };
 
   // Obsługa zaznaczenia wszystkich
   const handleSelectAll = (selected: boolean) => {
-    setProposals(prev => prev.map(proposal => ({ ...proposal, selected })));
+    setProposals((prev) => prev.map((proposal) => ({ ...proposal, selected })));
   };
 
   // Obsługa edycji propozycji
-  const handleProposalEdit = (proposalId: string, field: 'front' | 'back', value: string) => {
-    setProposals(prev => 
-      prev.map(proposal => {
+  const handleProposalEdit = (proposalId: string, field: "front" | "back", value: string) => {
+    setProposals((prev) =>
+      prev.map((proposal) => {
         if (proposal.id === proposalId) {
           const updated = { ...proposal, [field]: value };
           // Sprawdź czy została edytowana
@@ -125,8 +121,8 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
 
   // Obsługa akceptacji wybranych propozycji
   const handleAcceptSelected = async () => {
-    const selectedProposals = proposals.filter(p => p.selected);
-    
+    const selectedProposals = proposals.filter((p) => p.selected);
+
     if (selectedProposals.length === 0) {
       addToast("Wybierz co najmniej jedną propozycję do akceptacji", "error");
       return;
@@ -136,12 +132,12 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
 
     try {
       const acceptFlashcardsRequest: AcceptFlashcardsRequestDTO = {
-        accepted_flashcards: selectedProposals.map(proposal => ({
+        accepted_flashcards: selectedProposals.map((proposal) => ({
           proposal_id: proposal.id,
           front: proposal.front,
           back: proposal.back,
-          edit_status: proposal.edited ? "edited" as EditStatus : "unedited" as EditStatus,
-        }))
+          edit_status: proposal.edited ? ("edited" as EditStatus) : ("unedited" as EditStatus),
+        })),
       };
 
       const response = await fetch(`/api/generations/${generationId}/accept`, {
@@ -157,7 +153,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
       }
 
       const result: AcceptFlashcardsResponseDTO = await response.json();
-      
+
       addToast(
         `Pomyślnie zaakceptowano ${result.accepted_count} fiszek. ${result.accepted_unedited_count} bez edycji, ${result.accepted_edited_count} z edycją.`,
         "success"
@@ -167,7 +163,6 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
       setTimeout(() => {
         window.location.href = "/flashcards";
       }, 2000);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
       addToast(`Nie udało się zaakceptować fiszek: ${errorMessage}`, "error");
@@ -212,7 +207,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
           <Button onClick={fetchGenerationDetails} variant="outline">
             Spróbuj ponownie
           </Button>
-          <Button onClick={() => window.location.href = "/generations"} variant="secondary">
+          <Button onClick={() => (window.location.href = "/generations")} variant="secondary">
             Powrót do listy
           </Button>
         </div>
@@ -220,8 +215,8 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
     );
   }
 
-  const selectedCount = proposals.filter(p => p.selected).length;
-  const editedCount = proposals.filter(p => p.selected && p.edited).length;
+  const selectedCount = proposals.filter((p) => p.selected).length;
+  const editedCount = proposals.filter((p) => p.selected && p.edited).length;
   const uneditedCount = selectedCount - editedCount;
 
   return (
@@ -231,14 +226,12 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
         <div>
           <h1 className="text-3xl font-bold mb-2">Generacja #{generation.generation_id}</h1>
           <p className="text-gray-600">
-            Wygenerowano {generation.generated_count} propozycji fiszek w {formatDuration(generation.generation_duration)}
+            Wygenerowano {generation.generated_count} propozycji fiszek w{" "}
+            {formatDuration(generation.generation_duration)}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => window.location.href = "/generations"}
-          >
+          <Button variant="outline" onClick={() => (window.location.href = "/generations")}>
             ← Powrót do listy
           </Button>
         </div>
@@ -253,12 +246,20 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
           <div>
             <span className="font-medium text-gray-700">Status:</span>
             <div className="mt-1">
-              <Badge 
-                variant={generation.status === "completed" ? "default" : 
-                         generation.status === "processing" ? "secondary" : "destructive"}
+              <Badge
+                variant={
+                  generation.status === "completed"
+                    ? "default"
+                    : generation.status === "processing"
+                      ? "secondary"
+                      : "destructive"
+                }
               >
-                {generation.status === "completed" ? "Ukończona" :
-                 generation.status === "processing" ? "W toku" : "Błąd"}
+                {generation.status === "completed"
+                  ? "Ukończona"
+                  : generation.status === "processing"
+                    ? "W toku"
+                    : "Błąd"}
               </Badge>
             </div>
           </div>
@@ -272,7 +273,26 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
           </div>
           <div>
             <span className="font-medium text-gray-700">Tekst źródłowy:</span>
-            <p className="text-gray-900 text-sm">{generation.source_text_length} znaków</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-gray-900 text-sm">{generation.source_text_length} znaków</p>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Zobacz
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="!w-[80vw] !max-w-[80vw] max-h-[80vh] overflow-hidden">
+                  <DialogHeader>
+                    <DialogTitle>Tekst źródłowy generacji</DialogTitle>
+                  </DialogHeader>
+                  <div className="overflow-y-auto max-h-[60vh] p-4 bg-gray-50 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed">
+                      {generation.source_text}
+                    </pre>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
           <div>
             <span className="font-medium text-gray-700">Już zaakceptowano:</span>
@@ -312,11 +332,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
             <p className="text-sm text-gray-600">
               Wybierz fiszki które chcesz dodać do swojej kolekcji. Możesz edytować treść przed akceptacją.
             </p>
-            <Button
-              onClick={handleAcceptSelected}
-              disabled={selectedCount === 0 || accepting}
-              size="lg"
-            >
+            <Button onClick={handleAcceptSelected} disabled={selectedCount === 0 || accepting} size="lg">
               {accepting ? "Akceptowanie..." : `Zaakceptuj wybrane (${selectedCount})`}
             </Button>
           </div>
@@ -326,10 +342,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
       {/* Lista propozycji */}
       <div className="grid gap-4">
         {proposals.map((proposal, index) => (
-          <Card
-            key={proposal.id}
-            className={`transition-all ${proposal.selected ? 'ring-2 ring-primary' : ''}`}
-          >
+          <Card key={proposal.id} className={`transition-all ${proposal.selected ? "ring-2 ring-primary" : ""}`}>
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 {/* Checkbox */}
@@ -340,31 +353,31 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
                 />
 
                 {/* Numer fiszki */}
-                <div className="text-sm font-medium text-gray-500 mt-1 min-w-[30px]">
-                  #{index + 1}
-                </div>
+                <div className="text-sm font-medium text-gray-500 mt-1 min-w-[30px]">#{index + 1}</div>
 
                 {/* Treść fiszki */}
                 <div className="flex-1 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor={`front-${proposal.id}`} className="block text-sm font-medium text-gray-700 mb-2">
                       Przód fiszki:
                     </label>
                     <Input
+                      id={`front-${proposal.id}`}
                       value={proposal.front}
-                      onChange={(e) => handleProposalEdit(proposal.id, 'front', e.target.value)}
+                      onChange={(e) => handleProposalEdit(proposal.id, "front", e.target.value)}
                       placeholder="Pytanie lub termin..."
                       className="w-full"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor={`back-${proposal.id}`} className="block text-sm font-medium text-gray-700 mb-2">
                       Tył fiszki:
                     </label>
                     <Textarea
+                      id={`back-${proposal.id}`}
                       value={proposal.back}
-                      onChange={(e) => handleProposalEdit(proposal.id, 'back', e.target.value)}
+                      onChange={(e) => handleProposalEdit(proposal.id, "back", e.target.value)}
                       placeholder="Odpowiedź lub definicja..."
                       className="w-full min-h-[80px]"
                     />
@@ -391,4 +404,4 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
   );
 };
 
-export default GenerationDetailsView; 
+export default GenerationDetailsView;
