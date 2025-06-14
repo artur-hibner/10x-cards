@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import { FlashcardDetailsModal } from "./FlashcardDetailsModal";
 
 // Mock fetch API
@@ -29,7 +29,9 @@ describe("FlashcardDetailsModal", () => {
         })
     ); // Never resolves
 
-    render(<FlashcardDetailsModal isOpen={true} onClose={mockOnClose} flashcardId={1} />);
+    act(() => {
+      render(<FlashcardDetailsModal isOpen={true} onClose={mockOnClose} flashcardId={1} />);
+    });
 
     expect(screen.getByText("Szczegóły fiszki ID: 1")).toBeInTheDocument();
     expect(screen.getByText("Pobieranie szczegółów...")).toBeInTheDocument();
@@ -38,7 +40,9 @@ describe("FlashcardDetailsModal", () => {
   it("powinien resetować stan gdy modal się zamyka", () => {
     const { rerender } = render(<FlashcardDetailsModal isOpen={true} onClose={mockOnClose} flashcardId={1} />);
 
-    rerender(<FlashcardDetailsModal isOpen={false} onClose={mockOnClose} flashcardId={1} />);
+    act(() => {
+      rerender(<FlashcardDetailsModal isOpen={false} onClose={mockOnClose} flashcardId={1} />);
+    });
 
     // Po zamknięciu modala, nie powinno być loading state
     expect(screen.queryByText("Pobieranie szczegółów...")).not.toBeInTheDocument();

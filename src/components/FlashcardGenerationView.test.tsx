@@ -162,7 +162,7 @@ describe("FlashcardGenerationView", () => {
   it("powinien pozwalać na zmianę modelu AI", async () => {
     render(<FlashcardGenerationView />);
 
-    const modelSelect = screen.getByDisplayValue("DeepSeek Chat v3");
+    const modelSelect = screen.getByDisplayValue("Gemini 2.0 Flash");
 
     // Zmień model
     fireEvent.change(modelSelect, { target: { value: "gemini-2-flash-exp" } });

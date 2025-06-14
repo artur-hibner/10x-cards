@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
@@ -108,6 +108,9 @@ export const FlashcardDetailsModal: React.FC<FlashcardDetailsModalProps> = ({ is
       <DialogContent className="max-h-[80vh] overflow-y-auto" style={{ maxWidth: "80vw", width: "80vw" }}>
         <DialogHeader>
           <DialogTitle>Szczegóły fiszki ID: {flashcardId}</DialogTitle>
+          <DialogDescription>
+            Wyświetla szczegółowe informacje o wybranej fiszce, w tym zawartość i metadane.
+          </DialogDescription>
         </DialogHeader>
 
         {state.loading && (

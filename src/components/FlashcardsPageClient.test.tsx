@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import { FlashcardsPageClient } from "./FlashcardsPageClient";
 
 // Mock fetch API
@@ -28,7 +28,9 @@ describe("FlashcardsPageClient", () => {
   });
 
   it("powinien renderować loading state na początku", () => {
-    render(<FlashcardsPageClient />);
+    act(() => {
+      render(<FlashcardsPageClient />);
+    });
     expect(screen.getByText("Ładowanie fiszek...")).toBeInTheDocument();
   });
 });
