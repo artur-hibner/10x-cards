@@ -9,9 +9,9 @@ export interface AIModel {
 export const AI_MODELS: AIModel[] = [
   {
     id: "deepseek-chat-v3",
-    name: "DeepSeek Chat v3",
-    modelPath: "deepseek/deepseek-chat-v3-0324:free",
-    contextTokens: "163,840",
+    name: "Gemini 2.0 Flash",
+    modelPath: "google/gemini-2.0-flash-001",
+    contextTokens: "1,048,576",
     isDefault: true,
   },
   {

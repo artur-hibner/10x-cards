@@ -237,6 +237,13 @@ export class OpenRouterService {
     const choice = response.choices[0];
     const content = choice.message.content;
 
+    // Logowanie surowej zawartości dla debugowania
+    this._logger.info("Surowa zawartość odpowiedzi z modelu", {
+      content: content,
+      contentLength: content?.length || 0,
+      contentType: typeof content,
+    });
+
     // Dodanie metadanych do odpowiedzi
     const metadata: OpenRouterResponseMetadata = {
       model: response.model,

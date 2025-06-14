@@ -13,7 +13,7 @@ export interface ModelParameters {
 export interface ResponseFormatSchema {
   name: string;
   strict: boolean;
-  schema: Record<string, string>;
+  schema: Record<string, any>;
 }
 
 // Bardziej szczegółowy schemat dla fiszek
@@ -21,20 +21,21 @@ export interface FlashcardsResponseSchema extends ResponseFormatSchema {
   name: string;
   strict: boolean;
   schema: {
-    flashcards: "array";
-  };
-  properties?: {
-    flashcards: {
-      type: "array";
-      items: {
-        type: "object";
-        properties: {
-          front: { type: "string" };
-          back: { type: "string" };
+    type: "object";
+    properties: {
+      flashcards: {
+        type: "array";
+        items: {
+          type: "object";
+          properties: {
+            front: { type: "string" };
+            back: { type: "string" };
+          };
+          required: string[];
         };
-        required: string[];
       };
     };
+    required: string[];
   };
 }
 
@@ -116,6 +117,29 @@ export interface ApiClientOptions {
 
 // Typy walidatorów odpowiedzi
 export const createResponseSchema = (schema: ResponseFormatSchema) => {
+  // Jeśli schema ma właściwości, traktujemy to jako JSON Schema
+  if (schema.schema.type === "object" && schema.schema.properties) {
+    const schemaObj: Record<string, z.ZodTypeAny> = {};
+    
+    for (const [key, prop] of Object.entries(schema.schema.properties)) {
+      const property = prop as any;
+      if (property.type === "string") {
+        schemaObj[key] = z.string();
+      } else if (property.type === "number") {
+        schemaObj[key] = z.number();
+      } else if (property.type === "boolean") {
+        schemaObj[key] = z.boolean();
+      } else if (property.type === "array") {
+        // Dla tablic - proste podejście, zwracamy z.array(z.any())
+        schemaObj[key] = z.array(z.any());
+      } else {
+        schemaObj[key] = z.any();
+      }
+    }
+    return z.object(schemaObj);
+  }
+  
+  // Fallback dla starych schematów
   const schemaObj: Record<string, z.ZodTypeAny> = {};
   for (const [key, type] of Object.entries(schema.schema)) {
     if (type === "string") {
