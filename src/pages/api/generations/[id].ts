@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
-import type { GenerationDTO } from "../../../types";
+import type { GenerationDTO, GenerationStatus, FlashcardProposalDTO } from "../../../types";
 import { supabaseClient } from "../../../db/supabase.client";
 
 export const prerender = false;
@@ -60,8 +60,8 @@ export const GET: APIRoute = async ({ params }) => {
       source_text_hash: generation.source_text_hash,
       source_text_length: generation.source_text_length,
       generation_duration: generation.generation_duration,
-      status: generation.status,
-      flashcards_proposals: generation.flashcards_proposals || [],
+      status: generation.status as GenerationStatus,
+      flashcards_proposals: (generation.flashcards_proposals as unknown as FlashcardProposalDTO[]) || [],
       source_text: generation.source_text,
       created_at: generation.created_at,
       updated_at: generation.updated_at,

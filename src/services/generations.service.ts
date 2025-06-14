@@ -1,5 +1,6 @@
 import type { CreateGenerationResponseDTO, FlashcardProposalDTO } from "../types";
 import { supabaseClient, DEFAULT_USER_ID } from "../db/supabase.client";
+import type { Json } from "../db/database.types";
 import crypto from "crypto";
 import { OpenRouterService } from "../lib/openrouter.service";
 import type { FlashcardsResponseSchema } from "../lib/openrouter.types";
@@ -39,20 +40,21 @@ export class GenerationService {
           name: "FlashcardsResponse",
           strict: true,
           schema: {
-            flashcards: "array",
-          },
-          properties: {
-            flashcards: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  front: { type: "string" },
-                  back: { type: "string" },
+            type: "object",
+            properties: {
+              flashcards: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    front: { type: "string" },
+                    back: { type: "string" },
+                  },
+                  required: ["front", "back"],
                 },
-                required: ["front", "back"],
               },
             },
+            required: ["flashcards"],
           },
         } as FlashcardsResponseSchema,
       }
@@ -90,7 +92,7 @@ export class GenerationService {
           generation_duration: generationDuration,
           accepted_edited_count: 0,
           accepted_unedited_count: 0,
-          flashcards_proposals: proposals,
+          flashcards_proposals: proposals as unknown as Json,
         })
         .select()
         .single();

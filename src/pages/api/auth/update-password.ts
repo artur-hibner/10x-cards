@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const authService = new SupabaseAuthService(locals.supabase);
     const { success, error } = await authService.updatePassword(password, token);
 
-    if (!success) {
+    if (!success && error) {
       return createAuthErrorResponse(error);
     }
 

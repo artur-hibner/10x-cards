@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       avatar_url: avatarUrl,
     });
 
-    if (!success) {
+    if (!success && error) {
       return createAuthErrorResponse(error);
     }
 

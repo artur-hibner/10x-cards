@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ locals }) => {
     const authService = new SupabaseAuthService(locals.supabase);
     const { success, error } = await authService.signOut();
 
-    if (!success) {
+    if (!success && error) {
       return createAuthErrorResponse(error);
     }
 

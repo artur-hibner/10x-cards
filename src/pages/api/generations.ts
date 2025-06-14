@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
 import { GenerationService } from "../../services/generations.service";
-import type { CreateGenerationRequestDTO, GenerationListResponseDTO } from "../../types";
+import type { CreateGenerationRequestDTO, GenerationListResponseDTO, GenerationStatus } from "../../types";
 import { supabaseClient } from "../../db/supabase.client";
 
 export const prerender = false;
@@ -67,7 +67,8 @@ export const GET: APIRoute = async ({ url }) => {
       source_text_hash: gen.source_text_hash,
       source_text_length: gen.source_text_length,
       generation_duration: gen.generation_duration,
-      status: gen.status,
+      status: gen.status as GenerationStatus,
+      source_text: gen.source_text,
       created_at: gen.created_at,
       updated_at: gen.updated_at,
     }));

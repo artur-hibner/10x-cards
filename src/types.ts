@@ -162,21 +162,25 @@ export interface GenerationStatisticsDTO {
 export interface UserAuthDTO {
   email: string;
   password: string;
+  [key: string]: unknown;
 }
 
 export interface UserRegisterDTO extends UserAuthDTO {
   password_confirmation: string;
   gender: "male" | "female";
+  [key: string]: unknown;
 }
 
 export interface RequestPasswordResetDTO {
   email: string;
+  [key: string]: unknown;
 }
 
 export interface UpdatePasswordDTO {
   password: string;
   password_confirmation: string;
   token: string;
+  [key: string]: unknown;
 }
 
 export interface AuthResponseDTO {

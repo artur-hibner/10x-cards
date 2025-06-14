@@ -64,15 +64,22 @@ export const GET: APIRoute = async ({ url }) => {
       timestamp: log.created_at,
       error_type: log.error_code,
       error_message: log.error_message,
+      created_at: log.created_at,
+      user_id: log.user_id,
+      model: log.model,
+      source_text_hash: log.source_text_hash,
+      source_text_length: log.source_text_length,
       input_data: {
         prompt: `Tekst źródłowy (${log.source_text_length} znaków, hash: ${log.source_text_hash.substring(0, 8)}...)`,
         parameters: {
+          temperature: 0.3,
+          max_tokens: 2000,
           model: log.model,
           source_text_length: log.source_text_length,
         },
       } as ModelInputData,
-      stack_trace: log.error_message, // W rzeczywistej implementacji można dodać osobną kolumnę
-    }));
+      stack_trace: log.error_message,
+    })) as GenerationErrorLogDTO[];
 
     const response: GenerationErrorLogsResponseDTO = {
       total: count || 0,
