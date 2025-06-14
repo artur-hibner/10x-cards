@@ -7,12 +7,15 @@ Ten projekt używa GitHub Actions do automatyzacji procesów CI/CD. Setup skład
 ### 1. CI Pipeline (`.github/workflows/ci.yml`)
 
 **Wyzwalane:**
+
 - Manualnie przez `workflow_dispatch`
 - Przy pushu do branch `main`
 - Przy pull request do branch `main`
 
 **Kroki:**
+
 1. **Test i Lint** - uruchamia się równolegle:
+
    - Lint kodu (ESLint)
    - Sprawdzenie TypeScript
    - Testy jednostkowe (Vitest) z coverage
@@ -25,10 +28,12 @@ Ten projekt używa GitHub Actions do automatyzacji procesów CI/CD. Setup skład
 ### 2. Deploy Pipeline (`.github/workflows/deploy.yml`)
 
 **Wyzwalane:**
+
 - Manualnie przez `workflow_dispatch`
 - Automatycznie po udanym CI na branch `main`
 
 **Kroki:**
+
 - Build produkcyjny
 - Przygotowanie artefaktów do deployment
 - Info o dalszych krokach deployment
@@ -64,6 +69,7 @@ Pipeline automatycznie odczytuje wersję Node.js z pliku `.nvmrc` (obecnie: 22.1
 ### Opcja 2: Droplet z Dockerem
 
 1. Stwórz `Dockerfile` w głównym katalogu:
+
 ```dockerfile
 FROM node:22.14.0-alpine
 WORKDIR /app
@@ -87,4 +93,4 @@ Dodaj do README.md głównego projektu:
 
 ```markdown
 ![CI Status](https://github.com/your-username/your-repo/workflows/CI%2FCD%20Pipeline/badge.svg)
-``` 
+```

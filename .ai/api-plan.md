@@ -1,6 +1,7 @@
 # REST API Plan
 
 ## 1. Zasoby
+
 - **Flashcards** - tabela `flashcards`
 - **Generations** - tabela `generations`
 - **Auth** - tabela `users` (zarządzana przez Supabase)
@@ -11,6 +12,7 @@
 ### Flashcards
 
 #### GET /api/flashcards
+
 - **Opis**: Pobiera listę fiszek zalogowanego użytkownika
 - **Parametry zapytania**:
   - `page` (opcjonalny): Numer strony (domyślnie 1)
@@ -44,6 +46,7 @@
 - **Kody błędów**: 401 Unauthorized, 500 Internal Server Error
 
 #### GET /api/flashcards/{id}
+
 - **Opis**: Pobiera pojedynczą fiszkę
 - **Struktura odpowiedzi**:
   ```json
@@ -61,6 +64,7 @@
 - **Kody błędów**: 401 Unauthorized, 404 Not Found, 500 Internal Server Error
 
 #### POST /api/flashcards
+
 - **Opis**: Tworzy nową fiszkę lub zestaw fiszek
 - **Struktura żądania**:
   ```json
@@ -109,6 +113,7 @@
 - **Kody błędów**: 400 Bad Request, 401 Unauthorized, 500 Internal Server Error
 
 #### PUT /api/flashcards/{id}
+
 - **Opis**: Aktualizuje istniejącą fiszkę
 - **Struktura żądania** (fields to update):
   ```json
@@ -139,6 +144,7 @@
 - **Kody błędów**: 400 Bad Request, 401 Unauthorized, 404 Not Found, 500 Internal Server Error
 
 #### DELETE /api/flashcards/{id}
+
 - **Opis**: Usuwa fiszkę
 - **Struktura odpowiedzi**: Brak treści
 - **Kody sukcesu**: 204 No Content
@@ -147,11 +153,12 @@
 ### Generations
 
 #### POST /api/generations
+
 - **Opis**: Inicjuje generację kandydatów na fiszki z tekstu źródłowego
 - **Struktura żądania**:
   ```json
   {
-    "source_text": "Tekst źródłowy do generacji fiszek...",
+    "source_text": "Tekst źródłowy do generacji fiszek..."
   }
   ```
 - **Struktura odpowiedzi**:
@@ -177,6 +184,7 @@
 - **Kody błędów**: 400 Bad Request, 401 Unauthorized, 500 Internal Server Error
 
 #### GET /api/generations
+
 - **Opis**: Pobiera listę wszystkich generacji fiszek
 - **Struktura odpowiedzi**:
   ```json
@@ -217,6 +225,7 @@
 - **Kody błędów**: 401 Unauthorized, 500 Internal Server Error
 
 #### GET /api/generations/{id}
+
 - **Opis**: Pobiera status i wyniki generacji fiszek
 - **Struktura odpowiedzi**:
   ```json
@@ -250,6 +259,7 @@
 - **Kody błędów**: 401 Unauthorized, 404 Not Found, 500 Internal Server Error
 
 #### POST /api/generations/{id}/accept
+
 - **Opis**: Akceptuje wybrane propozycje fiszek z generacji
 - **Struktura żądania**:
   ```json
@@ -297,6 +307,7 @@
 - **Kody błędów**: 400 Bad Request, 401 Unauthorized, 404 Not Found, 500 Internal Server Error
 
 #### GET /api/generations/error-logs
+
 - **Opis**: Pobiera logi błędów z generacji fiszek
 - **Parametry zapytania**:
   - `from` (opcjonalny): Data początkowa w formacie ISO
@@ -331,6 +342,7 @@
 - **Kody błędów**: 401 Unauthorized, 500 Internal Server Error
 
 #### GET /api/generations/statistics
+
 - **Opis**: Pobiera statystyki generacji fiszek
 - **Struktura odpowiedzi**:
   ```json
@@ -370,6 +382,7 @@ System uwierzytelniania i autoryzacji jest oparty na funkcjach Supabase:
 - API weryfikuje tokeny przez mechanizmy Supabase i stosuje odpowiednie polityki dostępu
 
 Polityki RLS są skonfigurowane tak, że:
+
 - Użytkownicy mogą czytać, aktualizować i usuwać tylko własne fiszki (gdzie `user_id` odpowiada ich ID)
 - Użytkownicy mogą czytać i zarządzać tylko własnymi generacjami
 - Dostęp do endpointów API jest ograniczony do zalogowanych użytkowników
@@ -379,11 +392,13 @@ Polityki RLS są skonfigurowane tak, że:
 ### Walidacja
 
 #### Flashcards
+
 - `front`: wymagane, niepuste, maksymalnie 200 znaków
 - `back`: wymagane, niepuste, maksymalnie 500 znaków
 - `source`: wymagane, jedna z wartości: 'ai-full', 'ai-edited', 'manual'
 
 #### Generations
+
 - `source_text`: wymagane, długość między 1000 a 10000 znaków
 - `source_text_hash`: wymagane, unikalny hash tekstu źródłowego
 - `model`: wymagane, dozwolone tylko konkretne modele skonfigurowane w systemie
@@ -391,6 +406,7 @@ Polityki RLS są skonfigurowane tak, że:
 ### Logika biznesowa
 
 #### Generacja fiszek
+
 - Proces generacji jest asynchroniczny
 - Po utworzeniu generacji, system komunikuje się z API OpenRouter.ai, aby wygenerować propozycje fiszek
 - Propozycje są przechowywane tymczasowo do momentu akceptacji

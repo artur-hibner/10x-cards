@@ -11,16 +11,19 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
 #### Strony (Astro)
 
 1. **src/pages/auth/login.astro**
+
    - Strona logowania z wykorzystaniem komponentu `LoginForm`
    - Server-side rendering z obsługą przekierowań dla zalogowanych użytkowników
    - Przekazywanie błędów z URL do formularza (np. po nieudanym logowaniu)
 
 2. **src/pages/auth/register.astro**
+
    - Strona rejestracji z wykorzystaniem komponentu `RegisterForm`
    - Server-side rendering z obsługą przekierowań dla zalogowanych użytkowników
    - Obsługa komunikatów o sukcesie/błędach
 
 3. **src/pages/auth/reset-password.astro**
+
    - Strona żądania linku do resetu hasła z komponentem `RequestPasswordResetForm`
    - Obsługa stanu formularza (wysłano/nie wysłano)
 
@@ -32,23 +35,27 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
 #### Komponenty React (interaktywne)
 
 1. **src/components/auth/LoginForm.tsx**
+
    - Formularz logowania z polami email i hasło
    - Walidacja danych wejściowych po stronie klienta (Zod)
    - Obsługa błędów API
    - Przycisk "Zapomniałem hasła" kierujący do `reset-password`
 
 2. **src/components/auth/RegisterForm.tsx**
+
    - Formularz rejestracji z polami email, hasło, potwierdzenie hasła
    - Walidacja danych wejściowych (Zod)
    - Obsługa błędów API
    - Link do logowania dla istniejących użytkowników
 
 3. **src/components/auth/RequestPasswordResetForm.tsx**
+
    - Formularz żądania linku resetującego hasło
    - Pole email z walidacją
    - Komunikaty o sukcesie/błędach
 
 4. **src/components/auth/UpdatePasswordForm.tsx**
+
    - Formularz ustawiania nowego hasła
    - Pola: nowe hasło, potwierdzenie hasła
    - Walidacja siły hasła
@@ -61,6 +68,7 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
 #### Layouty
 
 1. **src/layouts/AuthLayout.astro**
+
    - Specjalny layout dla stron autoryzacji
    - Prostszy interfejs niż główny layout aplikacji
    - Centrowanie formularzy, logo aplikacji
@@ -82,6 +90,7 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
 #### Komunikaty błędów
 
 1. Formularze React:
+
    - Błędy walidacji formularza (pola wymagane, format email, zgodność haseł)
    - Błędy API (niepoprawne dane logowania, email już istnieje)
    - Obsługa komunikatów w formularzach z wykorzystaniem komponentów UI z Shadcn
@@ -93,6 +102,7 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
 ### 1.3. Scenariusze użycia
 
 1. **Rejestracja użytkownika**
+
    - Użytkownik wchodzi na `/auth/register`
    - Wypełnia formularz (email, hasło, potwierdzenie)
    - Po poprawnej walidacji, dane są wysyłane do API Supabase
@@ -100,6 +110,7 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
    - W przypadku błędu, wyświetlany jest komunikat
 
 2. **Logowanie użytkownika**
+
    - Użytkownik wchodzi na `/auth/login`
    - Wypełnia formularz (email, hasło)
    - Po poprawnej walidacji, dane są wysyłane do API Supabase
@@ -107,6 +118,7 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
    - W przypadku błędu, wyświetlany jest komunikat
 
 3. **Resetowanie hasła**
+
    - Użytkownik wchodzi na `/auth/reset-password`
    - Podaje adres email
    - Na podany email wysyłany jest link do resetu hasła
@@ -124,6 +136,7 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
 ### 2.1. Endpointy API
 
 1. **src/pages/api/auth/register.ts**
+
    - Metoda: POST
    - Obsługa rejestracji użytkownika
    - Walidacja danych wejściowych (Zod)
@@ -131,6 +144,7 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
    - Zwraca status 201 (Created) lub odpowiedni kod błędu
 
 2. **src/pages/api/auth/login.ts**
+
    - Metoda: POST
    - Obsługa logowania użytkownika
    - Walidacja danych wejściowych (Zod)
@@ -139,12 +153,14 @@ Dokument opisuje architekturę modułu autentykacji dla aplikacji 10x-cards, kt�
    - Zwraca status 200 (OK) lub odpowiedni kod błędu
 
 3. **src/pages/api/auth/logout.ts**
+
    - Metoda: POST
    - Obsługa wylogowania użytkownika
    - Usunięcie cookies sesji
    - Zwraca status 200 (OK)
 
 4. **src/pages/api/auth/reset-password.ts**
+
    - Metoda: POST
    - Żądanie wysłania linku do resetu hasła
    - Walidacja adresu email
@@ -206,35 +222,41 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Hasło jest wymagane"),
 });
 
-export const registerSchema = z.object({
-  email: z.string().email("Nieprawidłowy format adresu email"),
-  password: z.string()
-    .min(8, "Hasło musi mieć co najmniej 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać przynajmniej jedną wielką literę")
-    .regex(/[a-z]/, "Hasło musi zawierać przynajmniej jedną małą literę")
-    .regex(/[0-9]/, "Hasło musi zawierać przynajmniej jedną cyfrę"),
-  password_confirmation: z.string(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Hasła muszą być identyczne",
-  path: ["password_confirmation"],
-});
+export const registerSchema = z
+  .object({
+    email: z.string().email("Nieprawidłowy format adresu email"),
+    password: z
+      .string()
+      .min(8, "Hasło musi mieć co najmniej 8 znaków")
+      .regex(/[A-Z]/, "Hasło musi zawierać przynajmniej jedną wielką literę")
+      .regex(/[a-z]/, "Hasło musi zawierać przynajmniej jedną małą literę")
+      .regex(/[0-9]/, "Hasło musi zawierać przynajmniej jedną cyfrę"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Hasła muszą być identyczne",
+    path: ["password_confirmation"],
+  });
 
 export const requestPasswordResetSchema = z.object({
   email: z.string().email("Nieprawidłowy format adresu email"),
 });
 
-export const updatePasswordSchema = z.object({
-  password: z.string()
-    .min(8, "Hasło musi mieć co najmniej 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać przynajmniej jedną wielką literę")
-    .regex(/[a-z]/, "Hasło musi zawierać przynajmniej jedną małą literę")
-    .regex(/[0-9]/, "Hasło musi zawierać przynajmniej jedną cyfrę"),
-  password_confirmation: z.string(),
-  token: z.string(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Hasła muszą być identyczne",
-  path: ["password_confirmation"],
-});
+export const updatePasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Hasło musi mieć co najmniej 8 znaków")
+      .regex(/[A-Z]/, "Hasło musi zawierać przynajmniej jedną wielką literę")
+      .regex(/[a-z]/, "Hasło musi zawierać przynajmniej jedną małą literę")
+      .regex(/[0-9]/, "Hasło musi zawierać przynajmniej jedną cyfrę"),
+    password_confirmation: z.string(),
+    token: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Hasła muszą być identyczne",
+    path: ["password_confirmation"],
+  });
 ```
 
 ### 2.4. Obsługa wyjątków
@@ -295,27 +317,21 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.supabase = supabaseClient;
 
   // Sprawdzenie sesji użytkownika
-  const { data: { session } } = await context.locals.supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await context.locals.supabase.auth.getSession();
   context.locals.session = session;
   context.locals.user = session?.user || null;
 
   // Lista stron wymagających autoryzacji
-  const authRequiredPages = [
-    "/generate",
-    "/flashcards",
-    "/study",
-  ];
+  const authRequiredPages = ["/generate", "/flashcards", "/study"];
 
   // Lista stron tylko dla niezalogowanych użytkowników
-  const guestOnlyPages = [
-    "/auth/login",
-    "/auth/register",
-    "/auth/reset-password",
-  ];
+  const guestOnlyPages = ["/auth/login", "/auth/register", "/auth/reset-password"];
 
   const url = new URL(context.request.url);
-  const isAuthRequired = authRequiredPages.some(page => url.pathname.startsWith(page));
-  const isGuestOnly = guestOnlyPages.some(page => url.pathname === page);
+  const isAuthRequired = authRequiredPages.some((page) => url.pathname.startsWith(page));
+  const isGuestOnly = guestOnlyPages.some((page) => url.pathname === page);
 
   // Przekierowanie jeśli użytkownik nie jest zalogowany a strona wymaga autoryzacji
   if (isAuthRequired && !context.locals.user) {
@@ -426,7 +442,7 @@ export class SupabaseAuthService {
   async resetPassword(email: string) {
     try {
       const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: new URL('/auth/update-password', import.meta.env.SITE).toString(),
+        redirectTo: new URL("/auth/update-password", import.meta.env.SITE).toString(),
       });
 
       if (error) throw error;
@@ -442,7 +458,7 @@ export class SupabaseAuthService {
       // Najpierw ustawiamy token w sesji
       await this.supabase.auth.setSession({
         access_token: token,
-        refresh_token: '',
+        refresh_token: "",
       });
 
       // Następnie aktualizujemy hasło
@@ -786,18 +802,21 @@ Przedstawiona architektura modułu autentykacji spełnia wszystkie wymagania okr
 Główne cechy architektury:
 
 1. **Rozdzielenie odpowiedzialności:**
+
    - Komponenty React dla interaktywnych formularzy
    - Strony Astro dla renderowania server-side
    - Middleware do zabezpieczenia tras i zarządzania sesją
    - Endpointy API do komunikacji z Supabase Auth
 
 2. **Bezpieczeństwo:**
+
    - Walidacja danych wejściowych (Zod)
    - Bezpieczne przechowywanie haseł (Supabase Auth)
    - Zabezpieczenie tras wymagających autoryzacji
    - Mechanizm odzyskiwania hasła
 
 3. **Skalowalność:**
+
    - Modułowa struktura ułatwiająca rozbudowę
    - Typowanie danych dla lepszej konserwacji kodu
    - Centralna obsługa błędów

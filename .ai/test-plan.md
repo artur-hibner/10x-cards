@@ -120,11 +120,13 @@ Niniejszy plan testów określa strategię, podejście, zasoby i harmonogram dzi
 ### 4.1 Generowanie fiszek
 
 1. **Wprowadzanie tekstu źródłowego**
+
    - Sprawdzenie walidacji minimalnej długości tekstu (1000 znaków)
    - Sprawdzenie walidacji maksymalnej długości tekstu (10000 znaków)
    - Weryfikacja obsługi różnych formatów tekstu
 
 2. **Proces generowania fiszek**
+
    - Weryfikacja poprawności wywołania API generowania
    - Testowanie obsługi błędów podczas generowania
    - Weryfikacja wyświetlania wskaźnika postępu
@@ -139,12 +141,14 @@ Niniejszy plan testów określa strategię, podejście, zasoby i harmonogram dzi
 ### 4.2 Zarządzanie fiszkami
 
 1. **Zapisywanie fiszek**
+
    - Testowanie zapisywania pojedynczych fiszek
    - Testowanie zapisywania wielu fiszek jednocześnie
    - Weryfikacja przypisania odpowiednich źródeł do fiszek (ai-full, ai-edited, manual)
    - Testowanie zapisywania zmodyfikowanych fiszek
 
 2. **Przeglądanie zapisanych fiszek**
+
    - Weryfikacja poprawności wyświetlania listy fiszek
    - Testowanie paginacji i sortowania
    - Testowanie filtrowania fiszek
@@ -157,12 +161,14 @@ Niniejszy plan testów określa strategię, podejście, zasoby i harmonogram dzi
 ### 4.3 Autoryzacja użytkowników
 
 1. **Rejestracja użytkownika**
+
    - Testowanie formularza rejestracji
    - Weryfikacja walidacji danych
    - Testowanie obsługi błędów
    - Weryfikacja komunikatów dla użytkownika
 
 2. **Logowanie użytkownika**
+
    - Testowanie logowania z prawidłowymi danymi
    - Testowanie logowania z nieprawidłowymi danymi
    - Weryfikacja obsługi błędów
@@ -179,11 +185,13 @@ Niniejszy plan testów określa strategię, podejście, zasoby i harmonogram dzi
 ### 5.1 Środowiska testowe
 
 1. **Środowisko deweloperskie**
+
    - Lokalny serwer Astro w trybie deweloperskim
    - Lokalna instancja Supabase lub emulator
    - Mocks dla usług zewnętrznych (np. OpenRouter.ai)
 
 2. **Środowisko testowe (staging)**
+
    - Pełna instalacja aplikacji na serwerze testowym
    - Testowa instancja Supabase z zanonimizowanymi danymi
    - Ograniczone podłączenie do usług zewnętrznych

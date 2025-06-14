@@ -1,12 +1,15 @@
 # Plan implementacji widoku Generate
 
 ## 1. Przegląd
+
 Widok **Generate** umożliwia użytkownikowi wprowadzenie długiego tekstu (od 1000 do 10000 znaków) i generowanie propozycji fiszek przy użyciu AI. Użytkownik może następnie przejrzeć, zaakceptować, edytować lub odrzucić poszczególne propozycje fiszek, a ostatecznie zapisać wybrane (zaakceptowane bądź wszystkie) fiszki do bazy danych.
 
 ## 2. Routing widoku
+
 Widok będzie dostępny pod ścieżką: `/generate`
 
 ## 3. Struktura komponentów
+
 - **FlashcardGenerationView** (główny kontener widoku) zawierający logikę i strukturę strony
   - **TextInputArea** – komponent pola tekstowego do wprowadzania źródłowego tekstu.
   - **GenerateButton** – przycisk inicjujący proces generowania fiszek.
@@ -17,7 +20,9 @@ Widok będzie dostępny pod ścieżką: `/generate`
   - **ToastNotifications** – system powiadomień dla komunikatów o sukcesie lub błędach.
 
 ## 4. Szczegóły komponentów
+
 ### GenerateView
+
 - Opis: Główny komponent zarządzający stanem widoku i komunikacją z API.
 - Główne elementy: pole tekstowe, przycisk generowania, kontener na listę propozycji, wskaźnik ładowania.
 - Obsługiwane interakcje: Wprowadzenie tekstu, kliknięcie przycisku generowania, akcje na kartach propozycji.
@@ -26,6 +31,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: Brak (strona niezależna)
 
 ### TextInputArea
+
 - Opis: Komponent pola tekstowego z walidacją długości.
 - Główne elementy: `<textarea>`, etykieta, komunikat o błędzie.
 - Obsługiwane interakcje: Zmiana wartości, walidacja po utracie fokusu.
@@ -34,6 +40,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: `value`, `onChange`, `onBlur`, `errorMessage` (opcjonalnie).
 
 ### GenerateButton
+
 - Opis: Przycisk do wysłania tekstu do API generacji.
 - Główne elementy: `<button>` z etykietą.
 - Obsługiwane interakcje: Kliknięcie, które wywołuje akcję API.
@@ -42,6 +49,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: `disabled` (boolean), `onClick`.
 
 ### LoadingIndicator
+
 - Opis: Wskaźnik ładowania prezentujący stan oczekiwania.
 - Główne elementy: Spinner lub skeleton.
 - Obsługiwane interakcje: Brak interakcji.
@@ -50,6 +58,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: Może być warunkowo renderowany.
 
 ### FlashcardList
+
 - Opis: Lista renderująca wszystkie propozycje fiszek.
 - Główne elementy: Kolekcja komponentów `ProposalCard`.
 - Obsługiwane interakcje: Przekazywanie akcji do komponentów potomnych.
@@ -58,6 +67,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: `proposals` (lista), `onUpdateProposal` (funkcja), `onRemoveProposal` (funkcja).
 
 ### FlashcardListItem
+
 - Opis: Karta pojedynczej propozycji fiszki z akcjami.
 - Główne elementy: Wyświetlanie pól `front` i `back`, przyciski akcji.
 - Obsługiwane interakcje:
@@ -69,6 +79,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: `proposal` (obiekt typu FlashcardProposalViewModel), `onAccept`, `onEdit`, `onReject`.
 
 ### BulkSaveButton
+
 - Opis: Komponent umożliwiający masowy zapis fiszek. W zależności od wyboru użytkownika, pozwala na zapis wszystkich fiszek lub tylko tych zaakceptowanych.
 - Główne elementy: Przyciski "Zapisz wszystkie" oraz "Zapisz zaakceptowane" prezentowane w jednym komponencie. Umożliwia wysłanie danych do backendu w jednym żądaniu
 - Obsługiwane interakcje: OnClick dla każdego przycisk, któ©y wywołuje odpowiednią funkcję wysyłającą żądanie do API
@@ -77,6 +88,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: onSaveAll, onSaveAccepted, disabled.
 
 ### ToastNotifications
+
 - Opis: Komponent odpowiedzialny za wyświetlanie krótkich powiadomień (toast), informujących użytkownika o sukcesach, błędach lub innych ważnych zdarzeniach.
 - Główne elementy: Pasek z komunikatem oraz ikonka zależna od typu (np. 'success', 'error', 'info').
 - Obsługiwane interakcje: Automatyczne znikanie po ustalonym czasie oraz możliwość ręcznego zamknięcia powiadomienia.
@@ -88,6 +100,7 @@ Widok będzie dostępny pod ścieżką: `/generate`
 - Propsy: `toasts` (lista powiadomień), `onRemoveToast` (funkcja usuwająca powiadomienie), `autoCloseDuration` (opcjonalnie, czas wyświetlania).
 
 ## 5. Typy
+
 - `GenerateFlashcardsCommand`:
   - `source_text`: string – tekst źródłowy do generacji fiszek.
 - `GenerationCreateResponseDto`:
@@ -112,14 +125,17 @@ Widok będzie dostępny pod ścieżką: `/generate`
   - `generation_id`: number | null
 
 ## 6. Zarządzanie stanem
+
 Widok będzie używał React `useState` do zarządzania:
+
 - Wartością pola tekstowego.
 - Stanem ładowania (`isLoading`).
 - Listą propozycji (`proposals`).
 - Stanem błędów i powiadomień (`error`, `toastMessage`).
-Dodatkowo, można stworzyć custom hook do obsługi wywołań API, np. `useApiCall`.
+  Dodatkowo, można stworzyć custom hook do obsługi wywołań API, np. `useApiCall`.
 
 ## 7. Integracja API
+
 - Wywołanie API po kliknięciu przycisku generowania:
   - Metoda: `POST`
   - Endpoint: `/api/generations`
@@ -132,6 +148,7 @@ Dodatkowo, można stworzyć custom hook do obsługi wywołań API, np. `useApiCa
   - Odpowiedź: Zwraca zapisane fiszki wraz z ich identyfikatorami i metadanymi.
 
 ## 8. Interakcje użytkownika
+
 - Użytkownik wprowadza tekst do pola.
 - Po osiągnięciu minimalnej długości przycisk generowania staje się aktywny.
 - Po kliknięciu przycisku wyświetlany jest stan ładowania.
@@ -144,6 +161,7 @@ Dodatkowo, można stworzyć custom hook do obsługi wywołań API, np. `useApiCa
 - W razie błędów, użytkownik otrzymuje powiadomienie (toast).
 
 ## 9. Warunki i walidacja
+
 - Tekst wejściowy musi mieć od 1000 do 10000 znaków.
 - Propozycje fiszek muszą spełniać walidację:
   - `front`: nie pusty, max 200 znaków.
@@ -152,12 +170,14 @@ Dodatkowo, można stworzyć custom hook do obsługi wywołań API, np. `useApiCa
 - Podczas edycji fiszki, walidacja musi zapewnić zgodność z wymaganiami API.
 
 ## 10. Obsługa błędów
+
 - Wyświetlenie toast notification z komunikatem o błędzie, gdy:
   - Tekst jest nieprawidłowy lub nie spełnia długości.
   - API zwróci błąd (400, 401, 500) przy wywołaniu POST /api/generations lub POST /api/flashcards.
 - Blokada dalszych akcji do momentu rozwiązania błędu.
 
 ## 11. Kroki implementacji
+
 1. Utworzenie nowego pliku widoku `/generate` w folderze `src/pages`.
 2. Stworzenie głównego komponentu `FlashcardGenerationView` wraz z importem niezbędnych bibliotek (React, shadcn/ui, Tailwind).
 3. Implementacja komponentu `TextInputArea` z walidacją długości tekstu.

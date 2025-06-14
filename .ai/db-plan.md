@@ -3,6 +3,7 @@
 ## 1. Tabele
 
 ### a) `users`
+
 - `id` – UUID PRIMARY KEY (główny klucz, zarządzany przez Supabase)
 - `email` – VARCHAR(255), UNIQUE, NOT NULL
 - `encrypted_password` – VARCHAR, NOT NULL
@@ -10,6 +11,7 @@
 - `confirmed_at` – TIMESTAMPTZ
 
 ### b) `flashcards`
+
 - `id` – BIGSERIAL, PRIMARY KEY
 - `front` – VARCHAR(200), NOT NULL
 - `back` – VARCHAR(500), NOT NULL
@@ -19,13 +21,15 @@
 - `created_at` – TIMESTAMPTZ, NOT NULL, DEFAULT now()
 - `updated_at` – TIMESTAMPTZ, NOT NULL, DEFAULT now()
 
-*Trigger: Automatically update the "update_at" column on record updates.*
+_Trigger: Automatically update the "update_at" column on record updates._
 
 Indeksy:
+
 - INDEX na `user_id`
 - INDEX na `generation_id`
 
 ### c) `generations`
+
 - `id` – BIGSERIAL, PRIMARY KEY
 - `user_id` – UUID, NOT NULL, REFERENCES users(id)
 - `model` – VARCHAR, NOT NULL
@@ -39,9 +43,11 @@ Indeksy:
 - `updated_at` – TIMESTAMPTZ, NOT NULL, DEFAULT now()
 
 Indeksy:
+
 - INDEX na `user_id`
 
 ### d) `generation_error_logs`
+
 - `id` – BIGSERIAL, PRIMARY KEY
 - `user_id` – UUID, NOT NULL, REFERENCES users(id)
 - `model` – VARCHAR, NOT NULL
@@ -52,6 +58,7 @@ Indeksy:
 - `created_at` – TIMESTAMPTZ, NOT NULL, DEFAULT now()
 
 Indeksy:
+
 - INDEX na `user_id`
 
 ## 2. Relacje między tabelami
@@ -69,13 +76,16 @@ Indeksy:
 ## 4. Zasady PostgreSQL
 
 ### Ograniczenia CHECK
+
 - W tabeli `flashcards`: kolumna `source` musi przyjmować jedną z wartości: ('ai-full', 'ai-edited', 'manual').
 - W tabelach `generations` oraz `generation_error_logs`: kolumna `source_text_length` musi mieścić się w przedziale 1000–10000.
 
 ### Trigger
+
 - Automatyczny trigger aktualizujący pole `updated_at` w tabelach `flashcards` oraz `generations` przy każdej modyfikacji.
 
 ### Row Level Security (RLS)
+
 - Wdrożenie RLS na tabelach `flashcards`, `generations` oraz `generation_error_logs` oparte na kolumnie `user_id`, aby zapewnić, że użytkownicy mają dostęp tylko do swoich danych.
 
 ## 5. Dodatkowe uwagi

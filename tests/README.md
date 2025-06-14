@@ -69,4 +69,4 @@ e2e/
 - Używaj lokatorów dla odpornego wybierania elementów
 - Wykorzystuj porównania wizualne za pomocą `expect(page).toHaveScreenshot()`
 - Używaj narzędzia codegen do nagrywania testów: `npx playwright codegen`
-- Używaj Trace Viewer do debugowania: `npx playwright show-trace trace.zip` 
+- Używaj Trace Viewer do debugowania: `npx playwright show-trace trace.zip`

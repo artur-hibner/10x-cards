@@ -13,7 +13,7 @@ export interface ModelParameters {
 export interface ResponseFormatSchema {
   name: string;
   strict: boolean;
-  schema: Record<string, any>;
+  schema: Record<string, unknown>;
 }
 
 // Bardziej szczegółowy schemat dla fiszek
@@ -120,9 +120,9 @@ export const createResponseSchema = (schema: ResponseFormatSchema) => {
   // Jeśli schema ma właściwości, traktujemy to jako JSON Schema
   if (schema.schema.type === "object" && schema.schema.properties) {
     const schemaObj: Record<string, z.ZodTypeAny> = {};
-    
+
     for (const [key, prop] of Object.entries(schema.schema.properties)) {
-      const property = prop as any;
+      const property = prop as Record<string, unknown>;
       if (property.type === "string") {
         schemaObj[key] = z.string();
       } else if (property.type === "number") {
@@ -130,15 +130,15 @@ export const createResponseSchema = (schema: ResponseFormatSchema) => {
       } else if (property.type === "boolean") {
         schemaObj[key] = z.boolean();
       } else if (property.type === "array") {
-        // Dla tablic - proste podejście, zwracamy z.array(z.any())
-        schemaObj[key] = z.array(z.any());
+        // Dla tablic - proste podejście, zwracamy z.array(z.unknown())
+        schemaObj[key] = z.array(z.unknown());
       } else {
-        schemaObj[key] = z.any();
+        schemaObj[key] = z.unknown();
       }
     }
     return z.object(schemaObj);
   }
-  
+
   // Fallback dla starych schematów
   const schemaObj: Record<string, z.ZodTypeAny> = {};
   for (const [key, type] of Object.entries(schema.schema)) {
@@ -149,7 +149,7 @@ export const createResponseSchema = (schema: ResponseFormatSchema) => {
     } else if (type === "boolean") {
       schemaObj[key] = z.boolean();
     } else {
-      schemaObj[key] = z.any();
+      schemaObj[key] = z.unknown();
     }
   }
   return z.object(schemaObj);

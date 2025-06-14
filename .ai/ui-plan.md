@@ -7,6 +7,7 @@ Interfejs użytkownika dla MVP 10x-cards został zaprojektowany jako zestaw powi
 ## 2. Lista widoków
 
 ### 2.1 Ekran autoryzacji
+
 - **Ścieżka widoku:** '/login' i'/register'
 - **Główny cel:** Umożliwienie logowania i rejestracji użytkownika.
 - **Kluczowe informacje do wyświetlenia:** Formularz logowania/rejestracji, komunikaty błędów, opcjonalnie link do odzyskiwania hasła.
@@ -14,6 +15,7 @@ Interfejs użytkownika dla MVP 10x-cards został zaprojektowany jako zestaw powi
 - **UX, dostępność i względy bezpieczeństwa:** Prosty układ umożliwiający łatwe wprowadzenie danych, zachowanie standardów dostępności, czytelne etykiety i mechanizmy walidacji.
 
 ### 2.2 Widok generowania fiszek
+
 - **Ścieżka widoku:** '/generate'
 - **Główny cel:** Umożliwienie użytkownikowi wprowadzenia tekstu i wygenerowania propozycji fiszek przez AI i ich rewizję (zaakceptuk, edytuj, odrzuć).
 - **Kluczowe informacje do wyświetlenia:** Pole tekstowe do wprowadzenia treści, lista propozycji fiszek, wskaźnik ładowania (spinner/skeleton) podczas komunikacji z API. Przyciski akceptacji, edycji lub odrzucenia dla każdej fiszki.
@@ -21,14 +23,15 @@ Interfejs użytkownika dla MVP 10x-cards został zaprojektowany jako zestaw powi
 - **UX, dostępność i względy bezpieczeństwa:** Intuicyjny formularz, Jasne instrukcje dla użytkownika, czytelne stany ładowania, komunikaty o błędach i walidacja wejścia (1000-10000 znaków) responsywność, toast notifications.
 
 ### 2.3 Widok listy fiszek
+
 - **Ścieżka widoku:** /flashcards
 - **Główny cel:** Przegląd i zarządzanie zatwierdzonymi fiszkami.
 - **Kluczowe informacje do wyświetlenia:** Lista fiszek z ich zawartością, opcje edycji (modal) oraz usuwania poszczególnych fiszek.
 - **Kluczowe komponenty widoku:** Lista elementów, modal do edycji, przyciski usuwania, mechanizm bulk zapisu (np. "zapisz zatwierdzone").
 - **UX, dostępność i względy bezpieczeństwa:** Intuicyjny interfejs wspierający szybkie akcje na fiszkach, dostępność operacji (np. klawiaturowa nawigacja) oraz potwierdzenia działań usunięcia.
 
-
 ### 2.4 Modal edycji fiszek
+
 - **Ścieżka widoku:** wyświetlany nad widokiem listy fiszek
 - **Główny cel:** Umożliwienie edycji fiszek z walidacją danych bez zapisu w czasie rzeczywistym
 - **Kluczowe informacje do wyświetlenia:** Formularz edycji fiszki, pola "przód" oraz "tył", komunikaty walidacyjne.
@@ -36,6 +39,7 @@ Interfejs użytkownika dla MVP 10x-cards został zaprojektowany jako zestaw powi
 - **UX, dostępność i względy bezpieczeństwa:** Intuicyjny modal, dostępność dla czytników ekranu, walidacja danych po stronie klienta przed wysłaniem zmian.
 
 ### 2.5 Panel użytkownika
+
 - **Ścieżka widoku:** '/profile'
 - **Główny cel:** Zarządzanie danymi konta użytkownika oraz ustawieniami profilu.
 - **Kluczowe informacje do wyświetlenia:** Dane profilowe, ustawienia (np. zmiana hasła, preferencje). Przycisk wylogowania
@@ -43,6 +47,7 @@ Interfejs użytkownika dla MVP 10x-cards został zaprojektowany jako zestaw powi
 - **UX, dostępność i względy bezpieczeństwa:** Intuicyjny układ, zabezpieczenia dostępu, czytelność i możliwość modyfikacji danych.
 
 ### 2.6 Ekran sesji powtórek
+
 - **Ścieżka widoku:** '/session'
 - **Główny cel:** Umożliwienie przeprowadzenia sesji nauki na podstawie fiszek zgodnie z algorytmem powtórek.
 - **Kluczowe informacje do wyświetlenia:** Front fiszki, opcja odkrycia odpowiedzi, mechanizm oceny stopnia zapamiętania.
