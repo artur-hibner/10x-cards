@@ -1,0 +1,92 @@
+name: CI/CD Pipeline
+
+on:
+  # Uruchomienie manualne
+  workflow_dispatch:
+  # Uruchomienie po aktualizacji main
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test i Lint
+    runs-on: ubuntu-latest
+    
+    env:
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout kod
+        uses: actions/checkout@v4
+
+      - name: Odczytaj wersję Node.js z .nvmrc  
+        id: nvmrc
+        run: echo "node_version=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+
+      - name: Skonfiguruj Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.nvmrc.outputs.node_version }}
+          cache: 'npm'
+
+      - name: Zainstaluj dependencje
+        run: npm ci
+
+      - name: Lint kod
+        run: npm run lint
+
+      - name: Sprawdź TypeScript
+        run: npx tsc --noEmit
+
+      - name: Uruchom testy jednostkowe
+        run: npm run test:coverage
+
+      - name: Zainstaluj przeglądarki dla Playwright
+        run: npx playwright install --with-deps
+
+      - name: Uruchom testy E2E
+        run: npm run test:e2e
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  build:
+    name: Build Produkcyjny
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout kod
+        uses: actions/checkout@v4
+
+      - name: Odczytaj wersję Node.js z .nvmrc
+        id: nvmrc
+        run: echo "node_version=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+
+      - name: Skonfiguruj Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.nvmrc.outputs.node_version }}
+          cache: 'npm'
+
+      - name: Zainstaluj dependencje
+        run: npm ci
+
+      - name: Build aplikacji
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Upload artefaktów build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7 
