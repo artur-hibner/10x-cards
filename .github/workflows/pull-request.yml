@@ -66,10 +66,10 @@ jobs:
       - name: Sprawdź TypeScript
         run: npx tsc --noEmit
 
-              - name: Uruchom testy jednostkowe
+      - name: Uruchom testy jednostkowe
         run: npm run test -- --run
 
-              - name: Upload test results
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -102,9 +102,9 @@ jobs:
 
             ✅ **Wszystkie testy przeszły pomyślnie!**
 
-                         **Wykonane zadania:**
-             - ✅ Lintowanie kodu
-             - ✅ Testy jednostkowe
+            **Wykonane zadania:**
+            - ✅ Lintowanie kodu
+            - ✅ Testy jednostkowe
 
             **Twój kod jest gotowy do review!** 🎉`;
 
@@ -152,9 +152,9 @@ jobs:
 
             ❌ **Niektóre testy nie przeszły pomyślnie**
 
-                         **Status zadań:**
-             - ${lintStatus} Lintowanie kodu
-             - ${testStatus} Testy jednostkowe
+            **Status zadań:**
+            - ${lintStatus} Lintowanie kodu
+            - ${testStatus} Testy jednostkowe
 
             **Sprawdź szczegóły w zakładce Actions i popraw błędy przed mergem.**`;
 
