@@ -4,10 +4,11 @@ import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
-import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://10x-cards-2ps.pages.dev",
   output: "server",
   integrations: [react(), sitemap()],
   server: {
@@ -17,8 +18,10 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  adapter: node({
-    mode: "standalone",
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: true,
+    },
   }),
   experimental: {
     session: true,
