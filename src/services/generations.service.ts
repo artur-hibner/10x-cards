@@ -1,7 +1,6 @@
 import type { CreateGenerationResponseDTO, FlashcardProposalDTO } from "../types";
 import { supabaseClient, DEFAULT_USER_ID } from "../db/supabase.client";
 import type { Json } from "../db/database.types";
-import crypto from "crypto";
 import { OpenRouterService } from "../lib/openrouter.service";
 import type { FlashcardsResponseSchema } from "../lib/openrouter.types";
 import { getModelById, getDefaultModel, type AIModel } from "../config/ai-models";
@@ -68,7 +67,7 @@ export class GenerationService {
 
     try {
       // Obliczenie hash'a tekstu źródłowego (MD5)
-      const sourceTextHash = this.calculateHash(sourceText);
+      const sourceTextHash = await this.calculateHash(sourceText);
 
       // Czas rozpoczęcia generacji
       const startTime = Date.now();
@@ -115,8 +114,12 @@ export class GenerationService {
     }
   }
 
-  private calculateHash(text: string): string {
-    return crypto.createHash("md5").update(text).digest("hex");
+  private async calculateHash(text: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
   private async generateFlashcards(sourceText: string, selectedModel: AIModel): Promise<FlashcardProposalDTO[]> {
