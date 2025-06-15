@@ -37,6 +37,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       );
     }
 
+    const userId = locals.user.id;
+
     // Walidacja parametru id
     const idValidation = idSchema.safeParse(params.id);
     if (!idValidation.success) {
@@ -79,7 +81,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       .from("generations")
       .select("id, status")
       .eq("id", generationId)
-      .eq("user_id", locals.user.id)
+      .eq("user_id", userId)
       .single();
 
     if (generationError) {
@@ -115,7 +117,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       back: flashcard.back,
       source: flashcard.edit_status === "edited" ? ("ai-edited" as const) : ("ai-full" as const),
       generation_id: generationId,
-      user_id: locals.user!.id,
+      user_id: userId,
     }));
 
     const { data: createdFlashcards, error: createError } = await supabaseClient

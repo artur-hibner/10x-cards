@@ -23,7 +23,10 @@ export class FlashcardsService {
    * @param flashcards Lista fiszek do utworzenia
    * @returns Utworzone fiszki z przypisanymi ID
    */
-  public async createFlashcards(flashcards: CreateFlashcardDTO[], userId?: string): Promise<CreateFlashcardsResponseDTO> {
+  public async createFlashcards(
+    flashcards: CreateFlashcardDTO[],
+    userId?: string
+  ): Promise<CreateFlashcardsResponseDTO> {
     try {
       // Przygotowanie danych do zapisania
       const flashcardsToInsert = flashcards.map((flashcard) => ({
@@ -257,7 +260,11 @@ export class FlashcardsService {
       }
 
       // Usunięcie z bazy danych
-      const { error } = await supabaseClient.from("flashcards").delete().eq("id", id).eq("user_id", userId || DEFAULT_USER_ID);
+      const { error } = await supabaseClient
+        .from("flashcards")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", userId || DEFAULT_USER_ID);
 
       if (error) {
         throw new Error(`Błąd podczas usuwania fiszki: ${error.message}`);

@@ -7,8 +7,8 @@ export const supabaseClient: SupabaseClient<Database> = createClient<Database>(S
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
-  }
+    flowType: "pkce",
+  },
 });
 
 export const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";

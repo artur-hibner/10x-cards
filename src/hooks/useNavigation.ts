@@ -1,12 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 export const useNavigation = () => {
   const navigate = useCallback((path: string, options?: { delay?: number }) => {
     const { delay = 0 } = options || {};
-    
+
     const doNavigate = () => {
       // Bezpośrednie przekierowanie z zachowaniem sesji
-      window.location.href = path;
+      window.location.assign(path);
     };
 
     if (delay > 0) {
@@ -17,4 +17,4 @@ export const useNavigation = () => {
   }, []);
 
   return { navigate };
-}; 
+};
