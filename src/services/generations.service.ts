@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { OpenRouterService } from "../lib/openrouter.service";
 import type { FlashcardsResponseSchema } from "../lib/openrouter.types";
 import { getModelById, getDefaultModel, type AIModel } from "../config/ai-models";
+import { OPENROUTER_API_KEY } from "astro:env/server";
 
 // Interfejs odpowiedzi z modelu
 interface FlashcardResponse {
@@ -19,7 +20,7 @@ export class GenerationService {
 
   constructor() {
     // Pobranie klucza API OpenRouter
-    this.openRouterApiKey = import.meta.env.OPENROUTER_API_KEY as string;
+    this.openRouterApiKey = OPENROUTER_API_KEY;
     if (!this.openRouterApiKey) {
       throw new Error("Brak klucza API OpenRouter");
     }

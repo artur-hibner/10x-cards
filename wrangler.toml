@@ -14,6 +14,21 @@ name = "ENVIRONMENT"
 value = "production"
 
 [[env.production.bindings]]
+type = "vars"
+name = "SUPABASE_URL"
+value = "$SUPABASE_URL"
+
+[[env.production.bindings]]
+type = "vars"
+name = "SUPABASE_KEY"
+value = "$SUPABASE_KEY"
+
+[[env.production.bindings]]
+type = "vars"
+name = "OPENROUTER_API_KEY"
+value = "$OPENROUTER_API_KEY"
+
+[[env.production.bindings]]
 type = "kv_namespace"
 name = "SESSION"
 namespace_id = "ab3d1530ff5141f78e7dcb889de7b62a"
@@ -22,6 +37,21 @@ namespace_id = "ab3d1530ff5141f78e7dcb889de7b62a"
 type = "vars"
 name = "ENVIRONMENT"
 value = "preview"
+
+[[env.preview.bindings]]
+type = "vars"
+name = "SUPABASE_URL"
+value = "$SUPABASE_URL"
+
+[[env.preview.bindings]]
+type = "vars"
+name = "SUPABASE_KEY"
+value = "$SUPABASE_KEY"
+
+[[env.preview.bindings]]
+type = "vars"
+name = "OPENROUTER_API_KEY"
+value = "$OPENROUTER_API_KEY"
 
 [[env.preview.bindings]]
 type = "kv_namespace"

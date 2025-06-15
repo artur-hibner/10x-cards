@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 import process from "node:process";
 
 import react from "@astrojs/react";
@@ -12,6 +12,22 @@ export default defineConfig({
   site: "https://10x-cards-2ps.pages.dev",
   output: "server",
   integrations: [react(), sitemap()],
+  env: {
+    schema: {
+      SUPABASE_URL: envField.string({
+        context: "server",
+        access: "public",
+      }),
+      SUPABASE_KEY: envField.string({
+        context: "server",
+        access: "public",
+      }),
+      OPENROUTER_API_KEY: envField.string({
+        context: "server",
+        access: "secret",
+      }),
+    },
+  },
   server: {
     port: 3000,
     host: true, // Nasłuchuj na wszystkich interfejsach
