@@ -52,6 +52,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
 
+    env:
+      NODE_ENV: production
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
     steps:
       - name: Checkout kod
         uses: actions/checkout@v4
@@ -71,11 +77,6 @@ jobs:
 
       - name: Build aplikacji
         run: npm run build
-        env:
-          NODE_ENV: production
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
       - name: Upload artefaktów build
         uses: actions/upload-artifact@v4
