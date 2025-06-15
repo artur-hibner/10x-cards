@@ -39,7 +39,9 @@ jobs:
         run: npm run lint
 
       - name: Sprawdź TypeScript
-        run: npx tsc --noEmit
+        run: |
+          npx astro sync
+          npx tsc --noEmit
 
       - name: Uruchom testy jednostkowe
         run: npm run test -- --run
