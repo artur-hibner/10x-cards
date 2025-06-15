@@ -143,7 +143,7 @@ export class SupabaseAuthService {
   async resetPassword(email: string) {
     try {
       const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: new URL("/auth/update-password", import.meta.env.SITE).toString(),
+        redirectTo: new URL("/auth/update-password", "https://10x-cards-2ps.pages.dev").toString(),
       });
 
       if (error) throw error;
