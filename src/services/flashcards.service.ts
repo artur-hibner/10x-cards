@@ -23,12 +23,12 @@ export class FlashcardsService {
    * @param flashcards Lista fiszek do utworzenia
    * @returns Utworzone fiszki z przypisanymi ID
    */
-  public async createFlashcards(flashcards: CreateFlashcardDTO[]): Promise<CreateFlashcardsResponseDTO> {
+  public async createFlashcards(flashcards: CreateFlashcardDTO[], userId?: string): Promise<CreateFlashcardsResponseDTO> {
     try {
       // Przygotowanie danych do zapisania
       const flashcardsToInsert = flashcards.map((flashcard) => ({
         ...flashcard,
-        user_id: DEFAULT_USER_ID,
+        user_id: userId || DEFAULT_USER_ID,
       }));
 
       // Zapis do bazy danych
@@ -68,7 +68,7 @@ export class FlashcardsService {
    * @param params Parametry filtrowania i paginacji
    * @returns Lista fiszek z informacjami o paginacji
    */
-  public async getFlashcards(params: GetFlashcardsParams = {}): Promise<FlashcardListResponseDTO> {
+  public async getFlashcards(params: GetFlashcardsParams = {}, userId?: string): Promise<FlashcardListResponseDTO> {
     try {
       const { page = 1, limit = 10, sort = "created_at", order = "desc", source, generation_id } = params;
 
@@ -85,7 +85,7 @@ export class FlashcardsService {
       let query = supabaseClient
         .from("flashcards")
         .select("id, front, back, source, generation_id, created_at, updated_at", { count: "exact" })
-        .eq("user_id", DEFAULT_USER_ID);
+        .eq("user_id", userId || DEFAULT_USER_ID);
 
       // Dodanie filtrów
       if (source) {
@@ -143,7 +143,7 @@ export class FlashcardsService {
    * @param id ID fiszki
    * @returns Fiszka lub null jeśli nie została znaleziona
    */
-  public async getFlashcardById(id: number): Promise<FlashcardDTO | null> {
+  public async getFlashcardById(id: number, userId?: string): Promise<FlashcardDTO | null> {
     try {
       // Walidacja ID
       if (!Number.isInteger(id) || id <= 0) {
@@ -155,7 +155,7 @@ export class FlashcardsService {
         .from("flashcards")
         .select("id, front, back, source, generation_id, created_at, updated_at")
         .eq("id", id)
-        .eq("user_id", DEFAULT_USER_ID)
+        .eq("user_id", userId || DEFAULT_USER_ID)
         .single();
 
       if (error) {
@@ -192,7 +192,7 @@ export class FlashcardsService {
    * @param updateData Dane do aktualizacji
    * @returns Zaktualizowana fiszka
    */
-  public async updateFlashcard(id: number, updateData: UpdateFlashcardDTO): Promise<FlashcardDTO> {
+  public async updateFlashcard(id: number, updateData: UpdateFlashcardDTO, userId?: string): Promise<FlashcardDTO> {
     try {
       // Walidacja ID
       if (!Number.isInteger(id) || id <= 0) {
@@ -214,7 +214,7 @@ export class FlashcardsService {
         .from("flashcards")
         .update(dataToUpdate)
         .eq("id", id)
-        .eq("user_id", DEFAULT_USER_ID)
+        .eq("user_id", userId || DEFAULT_USER_ID)
         .select("id, front, back, source, generation_id, created_at, updated_at")
         .single();
 
@@ -249,7 +249,7 @@ export class FlashcardsService {
    * @param id ID fiszki do usunięcia
    * @returns true jeśli usunięto pomyślnie
    */
-  public async deleteFlashcard(id: number): Promise<boolean> {
+  public async deleteFlashcard(id: number, userId?: string): Promise<boolean> {
     try {
       // Walidacja ID
       if (!Number.isInteger(id) || id <= 0) {
@@ -257,7 +257,7 @@ export class FlashcardsService {
       }
 
       // Usunięcie z bazy danych
-      const { error } = await supabaseClient.from("flashcards").delete().eq("id", id).eq("user_id", DEFAULT_USER_ID);
+      const { error } = await supabaseClient.from("flashcards").delete().eq("id", id).eq("user_id", userId || DEFAULT_USER_ID);
 
       if (error) {
         throw new Error(`Błąd podczas usuwania fiszki: ${error.message}`);

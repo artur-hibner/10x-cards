@@ -4,19 +4,36 @@ import { supabaseClient } from "../../../db/supabase.client";
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ locals }) => {
   try {
-    // Pobranie podstawowych statystyk generacji
-    const { data: generationsData, error: generationsError } = await supabaseClient.from("generations").select("*");
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Pobranie podstawowych statystyk generacji TYLKO dla zalogowanego użytkownika
+    const { data: generationsData, error: generationsError } = await supabaseClient
+      .from("generations")
+      .select("*")
+      .eq("user_id", locals.user.id);
 
     if (generationsError) {
       throw new Error(`Błąd podczas pobierania danych generacji: ${generationsError.message}`);
     }
 
-    // Pobranie wszystkich fiszek dla statystyk akceptacji
+    // Pobranie wszystkich fiszek dla statystyk akceptacji TYLKO dla zalogowanego użytkownika
     const { data: flashcardsData, error: flashcardsError } = await supabaseClient
       .from("flashcards")
       .select("source, generation_id")
+      .eq("user_id", locals.user.id)
       .not("generation_id", "is", null);
 
     if (flashcardsError) {

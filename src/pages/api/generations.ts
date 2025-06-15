@@ -20,8 +20,21 @@ const paginationSchema = z.object({
   limit: z.string().pipe(z.coerce.number().min(1).max(100).default(10)).optional().default("10"),
 });
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Parsowanie parametrów query
     const searchParams = Object.fromEntries(url.searchParams);
     const validationResult = paginationSchema.safeParse(searchParams);
@@ -42,7 +55,7 @@ export const GET: APIRoute = async ({ url }) => {
     const { page, limit } = validationResult.data;
     const offset = (Number(page) - 1) * Number(limit);
 
-    // Pobranie generacji z paginacją
+    // Pobranie generacji z paginacją TYLKO dla zalogowanego użytkownika
     const {
       data: generations,
       error: fetchError,
@@ -50,6 +63,7 @@ export const GET: APIRoute = async ({ url }) => {
     } = await supabaseClient
       .from("generations")
       .select("*", { count: "exact" })
+      .eq("user_id", locals.user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + Number(limit) - 1);
 
@@ -99,10 +113,23 @@ export const GET: APIRoute = async ({ url }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   console.log("Request headers:", Object.fromEntries(request.headers.entries()));
 
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Parsowanie body żądania
     const rawBody = await request.text();
     console.log("Raw request body:", rawBody);
@@ -126,11 +153,12 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Inicjalizacja serwisu i przetwarzanie żądania
+    // Inicjalizacja serwisu i przetwarzanie żądania z prawdziwym user_id
     const generationService = new GenerationService();
     const result = await generationService.createGeneration(
       validationResult.data.source_text,
-      validationResult.data.model_id
+      validationResult.data.model_id,
+      locals.user.id
     );
 
     return new Response(JSON.stringify(result), {

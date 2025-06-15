@@ -61,7 +61,11 @@ export class GenerationService {
     );
   }
 
-  public async createGeneration(sourceText: string, modelId?: string): Promise<CreateGenerationResponseDTO> {
+  public async createGeneration(
+    sourceText: string,
+    modelId?: string,
+    userId?: string
+  ): Promise<CreateGenerationResponseDTO> {
     // Wybranie modelu AI na podstawie modelId lub użycie domyślnego
     const selectedModel: AIModel = modelId ? getModelById(modelId) || getDefaultModel() : getDefaultModel();
 
@@ -82,7 +86,7 @@ export class GenerationService {
       const { data: generation, error: dbError } = await supabaseClient
         .from("generations")
         .insert({
-          user_id: DEFAULT_USER_ID,
+          user_id: userId || DEFAULT_USER_ID,
           source_text_hash: sourceTextHash,
           source_text_length: sourceText.length,
           status: "completed",
@@ -109,7 +113,7 @@ export class GenerationService {
       };
     } catch (error) {
       // Logowanie błędu
-      await this.logGenerationError(error as Error, undefined, selectedModel.modelPath);
+      await this.logGenerationError(error as Error, undefined, selectedModel.modelPath, userId);
       throw error;
     }
   }
@@ -360,7 +364,12 @@ WAŻNE: Odpowiedź MUSI być w formacie JSON zgodnym z poniższym schematem:
     }));
   }
 
-  private async logGenerationError(error: Error, generationId?: number, modelPath?: string): Promise<void> {
+  private async logGenerationError(
+    error: Error,
+    generationId?: number,
+    modelPath?: string,
+    userId?: string
+  ): Promise<void> {
     try {
       await supabaseClient.from("generation_error_logs").insert({
         generation_id: generationId ?? 0,
@@ -369,7 +378,7 @@ WAŻNE: Odpowiedź MUSI być w formacie JSON zgodnym z poniższym schematem:
         model: modelPath || this.MODEL_NAME,
         source_text_hash: "",
         source_text_length: 0,
-        user_id: DEFAULT_USER_ID,
+        user_id: userId || DEFAULT_USER_ID,
         stack_trace: error.stack,
       });
     } catch (logError) {

@@ -13,8 +13,21 @@ const errorLogsQuerySchema = z.object({
   offset: z.string().pipe(z.coerce.number().min(0).default(0)).optional().default("0"),
 });
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Parsowanie parametrów query
     const searchParams = Object.fromEntries(url.searchParams);
     const validationResult = errorLogsQuerySchema.safeParse(searchParams);
@@ -34,10 +47,11 @@ export const GET: APIRoute = async ({ url }) => {
 
     const { from, to, limit, offset } = validationResult.data;
 
-    // Budowanie zapytania z filtrami
+    // Budowanie zapytania z filtrami TYLKO dla zalogowanego użytkownika
     let query = supabaseClient
       .from("generation_error_logs")
       .select("*", { count: "exact" })
+      .eq("user_id", locals.user.id)
       .order("created_at", { ascending: false });
 
     // Aplikowanie filtrów czasowych

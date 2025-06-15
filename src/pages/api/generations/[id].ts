@@ -8,8 +8,21 @@ export const prerender = false;
 // Schemat walidacji dla parametru id
 const idSchema = z.string().pipe(z.coerce.number().positive());
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Walidacja parametru id
     const validationResult = idSchema.safeParse(params.id);
 
@@ -28,11 +41,12 @@ export const GET: APIRoute = async ({ params }) => {
 
     const generationId = validationResult.data;
 
-    // Pobranie szczegółów generacji
+    // Pobranie szczegółów generacji TYLKO dla zalogowanego użytkownika
     const { data: generation, error: fetchError } = await supabaseClient
       .from("generations")
       .select("*")
       .eq("id", generationId)
+      .eq("user_id", locals.user.id)
       .single();
 
     if (fetchError) {
@@ -86,8 +100,21 @@ export const GET: APIRoute = async ({ params }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Walidacja parametru id
     const validationResult = idSchema.safeParse(params.id);
 
@@ -106,8 +133,13 @@ export const DELETE: APIRoute = async ({ params }) => {
 
     const generationId = validationResult.data;
 
-    // Sprawdzenie czy generacja istnieje
-    const { error: fetchError } = await supabaseClient.from("generations").select("id").eq("id", generationId).single();
+    // Sprawdzenie czy generacja istnieje i należy do użytkownika
+    const { error: fetchError } = await supabaseClient
+      .from("generations")
+      .select("id")
+      .eq("id", generationId)
+      .eq("user_id", locals.user.id)
+      .single();
 
     if (fetchError) {
       if (fetchError.code === "PGRST116") {
@@ -124,19 +156,24 @@ export const DELETE: APIRoute = async ({ params }) => {
       throw new Error(`Błąd podczas sprawdzania generacji: ${fetchError.message}`);
     }
 
-    // Usunięcie powiązanych fiszek (jeśli istnieją)
+    // Usunięcie powiązanych fiszek (jeśli istnieją) należących do użytkownika
     const { error: flashcardsDeleteError } = await supabaseClient
       .from("flashcards")
       .delete()
-      .eq("generation_id", generationId);
+      .eq("generation_id", generationId)
+      .eq("user_id", locals.user.id);
 
     if (flashcardsDeleteError) {
       console.error("Błąd podczas usuwania fiszek:", flashcardsDeleteError);
       // Nie przerywamy procesu - fiszki mogą nie istnieć
     }
 
-    // Usunięcie generacji
-    const { error: deleteError } = await supabaseClient.from("generations").delete().eq("id", generationId);
+    // Usunięcie generacji należącej do użytkownika
+    const { error: deleteError } = await supabaseClient
+      .from("generations")
+      .delete()
+      .eq("id", generationId)
+      .eq("user_id", locals.user.id);
 
     if (deleteError) {
       throw new Error(`Błąd podczas usuwania generacji: ${deleteError.message}`);

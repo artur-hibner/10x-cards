@@ -29,11 +29,24 @@ const updateFlashcardSchema = z
     "Przynajmniej jedno pole (front lub back) musi być wypełnione"
   );
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
   console.log("Otrzymano żądanie GET /api/flashcards/[id]");
   console.log("Params:", params);
 
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Walidacja parametru ID
     const validationResult = idParamSchema.safeParse(params.id);
     if (!validationResult.success) {
@@ -52,9 +65,9 @@ export const GET: APIRoute = async ({ params }) => {
 
     const flashcardId = validationResult.data;
 
-    // Pobranie fiszki z serwisu
+    // Pobranie fiszki z serwisu z user_id
     const flashcardsService = new FlashcardsService();
-    const flashcard = await flashcardsService.getFlashcardById(flashcardId);
+    const flashcard = await flashcardsService.getFlashcardById(flashcardId, locals.user.id);
 
     // Sprawdzenie czy fiszka została znaleziona
     if (!flashcard) {
@@ -90,11 +103,24 @@ export const GET: APIRoute = async ({ params }) => {
   }
 };
 
-export const PUT: APIRoute = async ({ params, request }) => {
+export const PUT: APIRoute = async ({ params, request, locals }) => {
   console.log("Otrzymano żądanie PUT /api/flashcards/[id]");
   console.log("Params:", params);
 
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Walidacja parametru ID
     const validationResult = idParamSchema.safeParse(params.id);
     if (!validationResult.success) {
@@ -148,9 +174,9 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
     const updateData: UpdateFlashcardDTO = updateValidation.data;
 
-    // Aktualizacja fiszki
+    // Aktualizacja fiszki z user_id
     const flashcardsService = new FlashcardsService();
-    const updatedFlashcard = await flashcardsService.updateFlashcard(flashcardId, updateData);
+    const updatedFlashcard = await flashcardsService.updateFlashcard(flashcardId, updateData, locals.user.id);
 
     // Zwrócenie zaktualizowanej fiszki
     return new Response(JSON.stringify(updatedFlashcard), {
@@ -187,11 +213,24 @@ export const PUT: APIRoute = async ({ params, request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async ({ params, locals }) => {
   console.log("Otrzymano żądanie DELETE /api/flashcards/[id]");
   console.log("Params:", params);
 
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Walidacja parametru ID
     const validationResult = idParamSchema.safeParse(params.id);
     if (!validationResult.success) {
@@ -210,9 +249,9 @@ export const DELETE: APIRoute = async ({ params }) => {
 
     const flashcardId = validationResult.data;
 
-    // Usunięcie fiszki
+    // Usunięcie fiszki z user_id
     const flashcardsService = new FlashcardsService();
-    const success = await flashcardsService.deleteFlashcard(flashcardId);
+    const success = await flashcardsService.deleteFlashcard(flashcardId, locals.user.id);
 
     if (success) {
       return new Response(JSON.stringify({ message: "Fiszka została pomyślnie usunięta" }), {

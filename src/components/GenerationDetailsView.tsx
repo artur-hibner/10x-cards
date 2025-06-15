@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import type { GenerationDTO, AcceptFlashcardsRequestDTO, AcceptFlashcardsResponseDTO, EditStatus } from "../types";
 import ToastNotifications from "./ToastNotifications";
 import type { ToastMessage, ToastType } from "./ToastNotifications";
+import { useNavigation } from "../hooks/useNavigation";
 
 interface GenerationDetailsViewProps {
   generationId: number;
@@ -26,6 +27,9 @@ interface FlashcardProposalViewModel {
 }
 
 const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generationId }) => {
+  // Hook do bezpiecznej nawigacji
+  const { navigate } = useNavigation();
+
   // Stan dla generacji
   const [generation, setGeneration] = useState<GenerationDTO | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -160,9 +164,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
       );
 
       // Przekierowanie do listy fiszek po 2 sekundach
-      setTimeout(() => {
-        window.location.href = "/flashcards";
-      }, 2000);
+      navigate("/flashcards", { delay: 2000 });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
       addToast(`Nie udało się zaakceptować fiszek: ${errorMessage}`, "error");
@@ -207,7 +209,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
           <Button onClick={fetchGenerationDetails} variant="outline">
             Spróbuj ponownie
           </Button>
-          <Button onClick={() => (window.location.href = "/generations")} variant="secondary">
+          <Button onClick={() => navigate("/generations")} variant="secondary">
             Powrót do listy
           </Button>
         </div>
@@ -231,7 +233,7 @@ const GenerationDetailsView: React.FC<GenerationDetailsViewProps> = ({ generatio
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => (window.location.href = "/generations")}>
+          <Button variant="outline" onClick={() => navigate("/generations")}>
             ← Powrót do listy
           </Button>
         </div>

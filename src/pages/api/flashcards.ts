@@ -57,11 +57,24 @@ const validateSourceAndGenerationId = (flashcard: z.infer<typeof flashcardSchema
   return true;
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   console.log("Otrzymano żądanie POST /api/flashcards");
   console.log("Request headers:", Object.fromEntries(request.headers.entries()));
 
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Parsowanie body żądania
     const rawBody = await request.text();
     console.log("Raw request body:", rawBody);
@@ -115,9 +128,9 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Inicjalizacja serwisu i zapis fiszek
+    // Inicjalizacja serwisu i zapis fiszek z prawdziwym user_id
     const flashcardsService = new FlashcardsService();
-    const result = await flashcardsService.createFlashcards(validationResult.data.flashcards);
+    const result = await flashcardsService.createFlashcards(validationResult.data.flashcards, locals.user.id);
 
     // Zwrócenie odpowiedzi
     return new Response(JSON.stringify(result), {
@@ -139,10 +152,23 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, locals }) => {
   console.log("Otrzymano żądanie GET /api/flashcards");
 
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Parsowanie parametrów query
     const url = new URL(request.url);
     const queryParams = Object.fromEntries(url.searchParams.entries());
@@ -164,9 +190,9 @@ export const GET: APIRoute = async ({ request }) => {
       );
     }
 
-    // Pobranie fiszek z serwisu
+    // Pobranie fiszek z serwisu z prawdziwym user_id
     const flashcardsService = new FlashcardsService();
-    const result = await flashcardsService.getFlashcards(validationResult.data);
+    const result = await flashcardsService.getFlashcards(validationResult.data, locals.user.id);
 
     // Zwrócenie odpowiedzi
     return new Response(JSON.stringify(result), {

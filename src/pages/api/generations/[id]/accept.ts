@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
 import type { AcceptFlashcardsRequestDTO, AcceptFlashcardsResponseDTO } from "../../../../types";
-import { supabaseClient, DEFAULT_USER_ID } from "../../../../db/supabase.client";
+import { supabaseClient } from "../../../../db/supabase.client";
 
 export const prerender = false;
 
@@ -22,8 +22,21 @@ const acceptFlashcardsSchema = z.object({
     .min(1, "Musisz wybrać co najmniej jedną fiszkę do akceptacji"),
 });
 
-export const POST: APIRoute = async ({ params, request }) => {
+export const POST: APIRoute = async ({ params, request, locals }) => {
   try {
+    // Sprawdzenie uwierzytelnienia
+    if (!locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Użytkownik nie jest zalogowany",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Walidacja parametru id
     const idValidation = idSchema.safeParse(params.id);
     if (!idValidation.success) {
@@ -61,11 +74,12 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     const { accepted_flashcards } = bodyValidation.data;
 
-    // Sprawdzenie czy generacja istnieje
+    // Sprawdzenie czy generacja istnieje i należy do użytkownika
     const { data: generation, error: generationError } = await supabaseClient
       .from("generations")
       .select("id, status")
       .eq("id", generationId)
+      .eq("user_id", locals.user.id)
       .single();
 
     if (generationError) {
@@ -95,13 +109,13 @@ export const POST: APIRoute = async ({ params, request }) => {
       );
     }
 
-    // Rozpoczęcie transakcji - tworzenie fiszek
+    // Rozpoczęcie transakcji - tworzenie fiszek z prawdziwym user_id
     const flashcardsToCreate = accepted_flashcards.map((flashcard) => ({
       front: flashcard.front,
       back: flashcard.back,
       source: flashcard.edit_status === "edited" ? ("ai-edited" as const) : ("ai-full" as const),
       generation_id: generationId,
-      user_id: DEFAULT_USER_ID,
+      user_id: locals.user!.id,
     }));
 
     const { data: createdFlashcards, error: createError } = await supabaseClient
